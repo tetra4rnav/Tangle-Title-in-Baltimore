@@ -11,6 +11,17 @@ cd "/Users/torialiu/Documents/New project/tangled-title-site"
 .venv/bin/streamlit run Instruction.py
 ```
 
+### On Windows
+
+From the repository root, run:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+streamlit run Instruction.py
+```
+
 ## Replace Placeholder Data
 
 The site is driven by CSV files in `data/`:
