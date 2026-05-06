@@ -25,6 +25,25 @@ st.set_page_config(page_title="Power Map", layout="wide")
 
 apply_theme()
 
+st.markdown(
+    """
+    <style>
+    section[data-testid="stSidebar"] [data-baseweb="tag"] {
+        background-color: #8a5a35 !important;
+        border-color: #6f4528 !important;
+        color: #fffaf0 !important;
+    }
+
+    section[data-testid="stSidebar"] [data-baseweb="tag"] span,
+    section[data-testid="stSidebar"] [data-baseweb="tag"] svg {
+        color: #fffaf0 !important;
+        fill: #fffaf0 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 @st.cache_data
 def load_data():
