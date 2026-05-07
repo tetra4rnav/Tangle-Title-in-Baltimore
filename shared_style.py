@@ -116,6 +116,33 @@ def apply_theme() -> None:
             line-height: 1.45;
         }
 
+        .rq-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 230px;
+        }
+
+        .rq-card h3 {
+            margin-top: 0.45rem;
+            color: var(--bwdc-teal-deep);
+        }
+
+        .rq-card p {
+            margin-bottom: 0.55rem;
+        }
+
+        .rq-badge {
+            display: inline-block;
+            align-self: flex-start;
+            padding: 0.18rem 0.6rem;
+            border-radius: 999px;
+            background: var(--bwdc-teal);
+            color: var(--bwdc-cream);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
         .takeaway {
             border-left: 5px solid var(--bwdc-sage);
             background: #f1f7df;
