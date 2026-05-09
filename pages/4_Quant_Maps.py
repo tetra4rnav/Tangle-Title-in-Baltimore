@@ -259,31 +259,32 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
     if "intersectionality_group" in chart_df.columns:
         chart_df["intersectionality_group"] = chart_df["intersectionality_group"].fillna("Excluded from analysis")
 
+    has_population = "total_population" in chart_df.columns
     has_total = "total_properties" in chart_df.columns
     has_tangled = "tangled_properties" in chart_df.columns
 
-    if has_total:
+    if has_population:
         tangled = (
             chart_df["tangled_properties"].fillna(0).astype(float)
             if has_tangled
             else pd.Series(0.0, index=chart_df.index, dtype=float)
         )
-        denom = chart_df["total_properties"].astype(float)
-        chart_df["tangled_per_1000_properties"] = (tangled / denom.where(denom > 0)) * 1000.0
-        size_col = "tangled_per_1000_properties"
-        size_legend = "Tangled per 1,000 properties"
+        denom = chart_df["total_population"].astype(float)
+        chart_df["tangled_per_10000_population"] = (tangled / denom.where(denom > 0)) * 10000.0
+        size_col = "tangled_per_10000_population"
+        size_legend = "Tangled per 10,000 population"
         plot_df = chart_df.dropna(subset=[size_col]).copy()
         n_dropped = len(chart_df) - len(plot_df)
         if n_dropped:
             st.caption(
-                f"{n_dropped} tract(s) omitted from this chart: missing `total_properties` or "
-                "`total_properties` ≤ 0 (cannot compute tangled per 1,000 properties)."
+                f"{n_dropped} tract(s) omitted from this chart: missing `total_population` or "
+                "`total_population` ≤ 0 (cannot compute tangled per 10,000 population)."
             )
     else:
         st.info(
-            "`total_properties` (ACS B25003_001 occupied housing units) is missing from the loaded "
+            "`total_population` (ACS B01003_001 total population) is missing from the loaded "
             "`quant_merged_data.csv`. Falling back to tangled-title property counts for bubble size. "
-            "Re-render `20260507_data_merge.qmd` and reload Streamlit to enable the per-1,000 view."
+            "Re-render `20260507_data_merge.qmd` and reload Streamlit to enable the per-10,000-population view."
         )
         if has_tangled:
             chart_df["tangled_count_size"] = chart_df["tangled_properties"].fillna(0).clip(lower=0) + 1
@@ -304,9 +305,11 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
     }
     if has_tangled:
         hover_data["tangled_properties"] = ":,.0f"
+    if has_population:
+        hover_data["total_population"] = ":,.0f"
+        hover_data["tangled_per_10000_population"] = ":,.2f"
     if has_total:
         hover_data["total_properties"] = ":,.0f"
-        hover_data["tangled_per_1000_properties"] = ":,.2f"
     if "intersectionality_group" in plot_df.columns:
         hover_data["intersectionality_group"] = True
     if size_col not in hover_data:
@@ -326,8 +329,9 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
             "median_property_value_total": "Median property value, all applicants (USD)",
             "intersectionality_group": "Intersectionality group",
             "tangled_properties": "Tangled-title properties",
+            "total_population": "Total population (ACS B01003_001)",
             "total_properties": "Total properties (ACS B25003_001)",
-            "tangled_per_1000_properties": "Tangled per 1,000 properties",
+            "tangled_per_10000_population": "Tangled per 10,000 population",
             "tangled_count_size": size_legend,
         },
     )
@@ -348,13 +352,12 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
         yaxis=dict(showgrid=True, gridcolor="rgba(41, 73, 67, 0.12)", tickprefix="$", tickformat=",.0f"),
     )
     st.plotly_chart(fig, width="stretch")
-    if has_total:
+    if has_population:
         st.caption(
             "Each dot is a Baltimore City census tract. X = Black population share; Y = FFIEC median "
-            "property value for Black applicants; bubble size = tangled-title properties per 1,000 "
-            "properties (ACS 2019 5-year B25003_001 occupied housing units as denominator, matching "
-            "`20260505_healthoutcomes_explore`). Tracts with missing FFIEC values for Black applicants "
-            "are dropped."
+            "property value for Black applicants; bubble size = tangled-title properties per 10,000 "
+            "residents (ACS 2019 5-year B01003_001 total population as denominator). Tracts with missing "
+            "FFIEC values for Black applicants are dropped."
         )
     else:
         st.caption(
@@ -1174,6 +1177,44 @@ with group_hist_right:
     st.markdown("#### Tract distribution across Baltimore")
     render_intersectionality_group_map(tracts, geojson)
 
+# Table 1 values from TanglesTitles_MPPPH/analysis/20260504_intersectionality_explore/
+# 20260504_intersectionality_explore.html (knitr::kable black_pct_by_group; inner join n=199).
+# Mean tangled (per 10,000) / Mean at-risk (per 10,000): tract means of
+# (tangled_properties or at_risk_properties) / total_population * 10000 by intersectionality_group
+# from data/quant/quant_merged_data.csv (same tract sets as n=).
+_INTERSECTIONAL_GROUP_SUMMARY_TABLE = pd.DataFrame(
+    {
+        "Intersectional group": [
+            "Sustained advantage (n=32)",
+            "Contemporary advantage (n=43)",
+            "Previous advantage (n=21)",
+            "Sustained disadvantage (n=54)",
+            "Excluded from analysis (n=49)",
+        ],
+        "Mean black %": [53.65, 24.53, 89.34, 83.76, 56.70],
+        "Median black %": [56.25, 16.50, 89.20, 88.10, 69.80],
+        "SD black %": [27.32, 21.28, 5.96, 12.76, 32.18],
+        "Mean tangled (per 10,000)": [25.67, 24.99, 69.10, 93.34, 20.27],
+        "Mean at-risk (per 10,000)": [15.24, 18.15, 14.42, 14.28, 10.39],
+    }
+)
+
+st.caption(
+    "Descriptive statistics of the four intersectional groups, excluded tracts and Baltimore city "
+    "average (non-fatal shooting rate and selected socioeconomic indicators)."
+)
+st.dataframe(
+    _INTERSECTIONAL_GROUP_SUMMARY_TABLE,
+    hide_index=True,
+    use_container_width=True,
+)
+st.caption(
+    "Black % columns: tract-level black_pct_of_pop (FFIEC HMDA explorer CSV), by intersectional assignment "
+    "(20260502_uzzi_replicate_latestdata_geoid_intersectional_group.csv); inner join on GEOID (n matched = 199). "
+    "Tangled / at-risk columns: mean tract rate per 10,000 residents (ACS B01003_001 total_population in "
+    "`quant_merged_data.csv`)."
+)
+
 st.divider()
 
 # =============================================================================
@@ -1192,7 +1233,8 @@ scatter_col, boxplot_col = st.columns(2, gap="medium")
 with scatter_col:
     st.markdown("### Black population share and median property value for Black applicants")
     st.markdown(
-        "Bubble size reflects tangled-title properties per 1,000 total properties."
+        "Bubble size reflects tangled-title properties per 10,000 residents "
+        "(ACS 2019 5-year tract total population, B01003_001)."
     )
     render_black_homeownership_chart(tracts)
 with boxplot_col:
@@ -1201,6 +1243,18 @@ with boxplot_col:
         "Compare how tract-level metrics vary across the four intersectionality groups."
     )
     render_group_boxplots(tracts)
+
+# =============================================================================
+# H2: Association with health outcomes
+# =============================================================================
+
+_quant_section_h2(
+    "association-with-health-outcomes",
+    "Association with health outcomes",
+)
+
+st.markdown("### Association with health outcomes")
+render_health_outcomes_chart(tracts)
 
 # =============================================================================
 # Scroll spy: inject script (st.iframe) for sidebar "On this page" highlighting
