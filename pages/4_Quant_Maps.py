@@ -1,3 +1,4 @@
+from html import escape
 from pathlib import Path
 import json
 
@@ -15,6 +16,12 @@ QUANT_DIR = DATA_DIR / "quant"
 
 TRACT_METRICS = QUANT_DIR / "quant_merged_data.csv"
 BALTIMORE_TRACTS_GEOJSON = QUANT_DIR / "baltimore_tracts.geojson"
+INTRO_IMAGE = QUANT_DIR / "andra-c-taylor-jr-mM52YKqAER8-unsplash.jpg"
+HOLC_MAP_IMAGE = QUANT_DIR / "holc-map.png"
+
+# Match `render_interactive_map` Plotly height + selectbox/caption slack; left column stretches to this min.
+_INTERACTIVE_TRACT_MAP_FIG_HEIGHT_PX = 560
+_CITYWIDE_MAP_ROW_LEFT_MIN_HEIGHT_PX = _INTERACTIVE_TRACT_MAP_FIG_HEIGHT_PX + 220
 
 GROUP_COLORS = {
     "Sustained advantage": "#a9c77b",
@@ -31,9 +38,21 @@ GROUP_ORDER = [
     "Excluded from analysis",
 ]
 
+# (fragment id, H2 title) for in-page sidebar TOC on this page only.
+_QUANT_TOC_H2: tuple[tuple[str, str], ...] = (
+    ("what-is-the-burden-of-tangled-titles", "What is the burden of tangled titles?"),
+    ("quant-bh-property-value", "Black Homeownership and Property Value"),
+    ("historical-context", "Historical Context"),
+    ("intersectionality-analysis", "Intersectionality Analysis"),
+)
+
 
 st.set_page_config(page_title="Quantitative Evidence", layout="wide")
 apply_theme()
+
+# =============================================================================
+# Helpers: I/O, formatting, and chart/map renderers (layout starts near page bottom)
+# =============================================================================
 
 
 @st.cache_data(show_spinner=False)
@@ -83,53 +102,75 @@ def baltimore_city_tracts(tracts: pd.DataFrame | None) -> pd.DataFrame:
     return tracts.copy()
 
 
-def render_metric_cards(tracts: pd.DataFrame | None) -> None:
-    if tracts is None:
-        st.info(
-            "Tract-level metrics file is missing. Add "
-            f"`{TRACT_METRICS.name}` under `data/quant/` to show citywide counts and equity totals."
+def render_citywide_tract_summary_panel(baltimore: pd.DataFrame) -> None:
+    """Baltimore City (GEOID 24510) headline counts, net equity metrics, and gross-positive caption."""
+    with st.container(border=True):
+        st.markdown(
+            """
+            <p class="quant-citywide-panel-root" style="font-size: 1.45rem; font-weight: 600; line-height: 1.5; color: #18312d; margin: 0 0 0.35rem 0;">
+            In Baltimore, there are:
+            </p>
+            """,
+            unsafe_allow_html=True,
         )
-        return
+        cols = baltimore.columns
 
-    baltimore = baltimore_city_tracts(tracts)
-    if baltimore.empty:
-        st.warning("No Baltimore City tracts (GEOID prefix 24510) found in the loaded table.")
-        return
+        if "tangled_properties" in cols:
+            tangled_property_count = baltimore["tangled_properties"].sum(skipna=True)
+        else:
+            tangled_property_count = 0
+        if "at_risk_properties" in cols:
+            at_risk_property_count = baltimore["at_risk_properties"].sum(skipna=True)
+        else:
+            at_risk_property_count = 0
 
-    st.markdown("In Baltimore, there are:")
-    tangled_sum = baltimore["tangled_properties"].sum(skipna=True) if "tangled_properties" in baltimore.columns else 0
-    at_risk_sum = baltimore["at_risk_properties"].sum(skipna=True) if "at_risk_properties" in baltimore.columns else 0
-    tangled_net = (
-        baltimore["tangled_net_equity"].sum(skipna=True) if "tangled_net_equity" in baltimore.columns else float("nan")
-    )
-    at_risk_net = (
-        baltimore["at_risk_net_equity"].sum(skipna=True) if "at_risk_net_equity" in baltimore.columns else float("nan")
-    )
+        if "tangled_net_equity" in cols:
+            tangled_net_equity_citywide = baltimore["tangled_net_equity"].sum(skipna=True)
+        else:
+            tangled_net_equity_citywide = float("nan")
+        if "at_risk_net_equity" in cols:
+            at_risk_net_equity_citywide = baltimore["at_risk_net_equity"].sum(skipna=True)
+        else:
+            at_risk_net_equity_citywide = float("nan")
 
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.metric("Tangled-title properties", fmt_int(tangled_sum))
-    with c2:
-        st.metric("At-risk properties", fmt_int(at_risk_sum))
-    with c3:
-        st.metric("Estimated tangled net equity", fmt_money(tangled_net))
-    with c4:
-        st.metric("Estimated at-risk net equity", fmt_money(at_risk_net))
+        burden_metrics = (
+            ("Tangled-title properties", fmt_int(tangled_property_count)),
+            ("At-risk properties", fmt_int(at_risk_property_count)),
+            ("Estimated tangled net equity", fmt_money(tangled_net_equity_citywide)),
+            ("Estimated at-risk net equity", fmt_money(at_risk_net_equity_citywide)),
+        )
+        top_left, top_right = st.columns(2)
+        with top_left:
+            st.metric(burden_metrics[0][0], burden_metrics[0][1])
+        with top_right:
+            st.metric(burden_metrics[1][0], burden_metrics[1][1])
+        bottom_left, bottom_right = st.columns(2)
+        with bottom_left:
+            st.metric(burden_metrics[2][0], burden_metrics[2][1])
+        with bottom_right:
+            st.metric(burden_metrics[3][0], burden_metrics[3][1])
 
-    gross_tangled = (
-        baltimore["tangled_gross_positive_equity"].sum(skipna=True)
-        if "tangled_gross_positive_equity" in baltimore.columns
-        else float("nan")
-    )
-    gross_at_risk = (
-        baltimore["at_risk_gross_positive_equity"].sum(skipna=True)
-        if "at_risk_gross_positive_equity" in baltimore.columns
-        else float("nan")
-    )
-    st.caption(
-        f"Gross positive equity (tract sums): tangled-title {fmt_money(gross_tangled)}; "
-        f"at-risk {fmt_money(gross_at_risk)}. Net equity can be lower when negative-equity exposure offsets positive."
-    )
+        if "tangled_gross_positive_equity" in cols:
+            gross_positive_tangled = baltimore["tangled_gross_positive_equity"].sum(skipna=True)
+        else:
+            gross_positive_tangled = float("nan")
+        if "at_risk_gross_positive_equity" in cols:
+            gross_positive_at_risk = baltimore["at_risk_gross_positive_equity"].sum(skipna=True)
+        else:
+            gross_positive_at_risk = float("nan")
+        st.caption(
+            "Across tracts, gross positive equity stacks each tract's positive slice: "
+            f"tangled-title totals {fmt_money(gross_positive_tangled)} and at-risk totals {fmt_money(gross_positive_at_risk)}. "
+            "Net equity can read smaller when negative-equity exposure offsets those positive amounts."
+        )
+
+
+def _quant_section_h2(fragment_id: str, title_plain: str) -> None:
+    """Native H2 with a stable DOM id for TOC / hash links.
+
+    Streamlit strips ``id`` from raw ``<h2>`` in ``st.markdown``; ``anchor=`` is supported.
+    """
+    st.header(title_plain, anchor=fragment_id)
 
 
 def render_interactive_map(tracts: pd.DataFrame | None, geojson: dict | None) -> None:
@@ -150,9 +191,6 @@ def render_interactive_map(tracts: pd.DataFrame | None, geojson: dict | None) ->
         st.warning("The tract table and boundary file are loaded, but their GEOIDs do not overlap.")
         return
 
-    st.caption(
-        "Choose one tract-level metric at a time. Values are descriptive; they do not imply individual-level causes."
-    )
     metric_options = {
         "Tangled-title properties": "tangled_properties",
         "At-risk properties": "at_risk_properties",
@@ -190,7 +228,7 @@ def render_interactive_map(tracts: pd.DataFrame | None, geojson: dict | None) ->
         center={"lat": 39.299, "lon": -76.61},
         zoom=10,
         opacity=0.78,
-        height=560,
+        height=_INTERACTIVE_TRACT_MAP_FIG_HEIGHT_PX,
     )
     map_fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
     st.plotly_chart(map_fig, width="stretch")
@@ -418,31 +456,48 @@ def render_quadrant_diagram() -> None:
                 x=[x],
                 y=[y],
                 mode="markers",
-                marker=dict(size=30, color=GROUP_COLORS[group], line=dict(width=2, color="#294943")),
+                marker=dict(size=34, color=GROUP_COLORS[group], line=dict(width=2.5, color="#18312d")),
                 hovertemplate=f"<b>{group}</b><br>{note}<extra></extra>",
                 showlegend=False,
             )
         )
-        fig.add_annotation(x=x, y=y + 0.11, text=f"<b>{group}</b>", showarrow=False, font=dict(size=13))
-        fig.add_annotation(x=x, y=y - 0.13, text=note, showarrow=False, font=dict(size=11), opacity=0.85)
+        fig.add_annotation(
+            x=x,
+            y=y + 0.11,
+            text=f"<b>{group}</b>",
+            showarrow=False,
+            font=dict(size=17, color="#18312d", family="Source Sans Pro, sans-serif"),
+        )
+        fig.add_annotation(
+            x=x,
+            y=y - 0.13,
+            text=note,
+            showarrow=False,
+            font=dict(size=14, color="#18312d", family="Source Sans Pro, sans-serif"),
+            opacity=1,
+        )
+    axis_title_font = dict(size=16, color="#18312d", family="Source Sans Pro, sans-serif")
+    tick_font = dict(size=14, color="#294943", family="Source Sans Pro, sans-serif")
     fig.update_layout(
-        height=460,
-        margin=dict(l=20, r=20, t=30, b=20),
+        height=500,
+        margin=dict(l=24, r=24, t=36, b=24),
         plot_bgcolor="#fff9e6",
         paper_bgcolor="#fff9e6",
         xaxis=dict(
-            title="Current neighborhood advantage",
+            title=dict(text="Current neighborhood advantage", font=axis_title_font),
             range=[0, 1],
             tickvals=[0.25, 0.75],
             ticktext=["Lower", "Higher"],
+            tickfont=tick_font,
             showgrid=False,
             zeroline=False,
         ),
         yaxis=dict(
-            title="Historical neighborhood advantage",
+            title=dict(text="Historical neighborhood advantage", font=axis_title_font),
             range=[0, 1],
             tickvals=[0.25, 0.75],
             ticktext=["Lower", "Higher"],
+            tickfont=tick_font,
             showgrid=False,
             zeroline=False,
         ),
@@ -643,24 +698,154 @@ def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
     )
 
 
+# =============================================================================
+# Page body: load cached inputs (tract table + GeoJSON)
+# =============================================================================
 tracts = load_tract_metrics(file_mtime(TRACT_METRICS))
 geojson = load_geojson(file_mtime(BALTIMORE_TRACTS_GEOJSON))
 
-st.title("Quantitative Evidence")
-st.markdown(
-    "Tract-level descriptive evidence for tangled-title and at-risk property burden in Baltimore City."
-)
-st.caption(
-    "Data vintage: merged intersectionality tract metrics (`quant_merged_data.csv`); "
-    "tract boundaries from `baltimore_tracts.geojson`."
+_toc_link_rows = "".join(
+    f'<a id="quant-toc-link-{fid}" class="quant-toc-item{" toc-active" if idx == 0 else ""}" href="#{fid}">{escape(label)}</a>'
+    for idx, (fid, label) in enumerate(_QUANT_TOC_H2)
 )
 
-st.markdown("## Research Questions")
-st.caption(
-    "Three quantitative research questions guide this section. RQ1 establishes baseline property "
-    "wealth at risk, RQ2 maps tangled-title burden alongside intersectional neighborhood context, "
-    "and RQ3 is a backup analysis on mortgage access."
+# =============================================================================
+# Sidebar: in-page TOC ("On this page")
+# =============================================================================
+with st.sidebar:
+    st.markdown(
+        f"""
+        <style>
+            /* Inherit Streamlit / theme font stack and sidebar font-size (see stMain block). */
+            #quant-toc-root {{
+                font-family: inherit;
+                margin: 0.15rem 0 0.75rem 0;
+            }}
+            /* Sidebar global theme uses * {{ color: ... !important }} — override inside TOC only. */
+            section[data-testid="stSidebar"] #quant-toc-root .quant-toc-page-title {{
+                font-size: 1em;
+                font-weight: 600;
+                color: #fffaf0 !important;
+                letter-spacing: 0;
+                margin: 0 0 0.5rem 0;
+                padding: 0;
+                text-decoration: none !important;
+                border: none;
+                box-shadow: none;
+            }}
+            section[data-testid="stSidebar"] #quant-toc-root .quant-toc-item {{
+                display: block;
+                margin: 0.08rem 0;
+                padding: 0.38rem 0.45rem;
+                border: 2px solid transparent !important;
+                border-radius: 6px;
+                color: rgba(255, 250, 240, 0.92) !important;
+                text-decoration: none !important;
+                font-size: 1em;
+                line-height: inherit;
+                font-weight: 500 !important;
+            }}
+            section[data-testid="stSidebar"] #quant-toc-root .quant-toc-item:hover {{
+                background: rgba(239, 194, 103, 0.15) !important;
+            }}
+            section[data-testid="stSidebar"] #quant-toc-root .quant-toc-item.toc-active {{
+                font-weight: 700 !important;
+                color: #fffaf0 !important;
+                border: 2px solid #efc267 !important;
+                background: rgba(0, 0, 0, 0.18) !important;
+            }}
+        </style>
+        <div id="quant-toc-root">
+            <p class="quant-toc-page-title">On this page</p>
+            {_toc_link_rows}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# =============================================================================
+# H1: page title + main-column baseline styles
+# =============================================================================
+st.title("Quantitative Evidence")
+st.markdown(
+    """
+    <style>
+        section[data-testid="stMain"] {
+            font-size: 1.08rem;
+        }
+        section[data-testid="stMain"] h2 {
+            scroll-margin-top: 4.5rem;
+        }
+        section[data-testid="stMain"] p,
+        section[data-testid="stMain"] li {
+            line-height: 1.62;
+        }
+        section[data-testid="stMain"] [data-testid="stCaption"] {
+            font-size: 0.95rem;
+        }
+        section[data-testid="stSidebar"] {
+            font-size: 1.02rem;
+        }
+    </style>
+    <p style="font-size: 1.18rem; line-height: 1.58; color: #18312d; margin: 0;">
+    Tract-level descriptive evidence for tangled-title and at-risk property burden in Baltimore City.
+    </p>
+    """,
+    unsafe_allow_html=True,
 )
+
+# =============================================================================
+# H2: What is the burden of tangled titles?
+# =============================================================================
+_quant_section_h2(
+    "what-is-the-burden-of-tangled-titles",
+    "What is the burden of tangled titles?",
+)
+
+intro_photo_col, intro_text_col = st.columns([1, 2], gap="large")
+with intro_photo_col:
+    if INTRO_IMAGE.exists():
+        st.image(str(INTRO_IMAGE), width="stretch")
+        st.markdown(
+            """
+            <p style="font-size: 0.78rem; line-height: 1.45; color: #5d6a64; margin: 0.1rem 0 0 0;">
+            Photo by
+            <a href="https://unsplash.com/@taylormadeglobal?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Andra C Taylor Jr</a>
+            on
+            <a href="https://unsplash.com/photos/a-brick-building-with-trees-in-front-of-it-mM52YKqAER8?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        st.caption(f"Image not found: `{INTRO_IMAGE.name}`")
+
+with intro_text_col:
+    st.markdown(
+        """
+        <div style="font-size: 1.4rem; line-height: 1.58; color: #18312d;">
+        <p style="margin: 0 0 0.75rem 0;">
+        Tangled titles are a major source of housing instability and wealth loss for Black homeowners in Baltimore.
+        </p>
+        <p style="margin: 0 0 0.75rem 0;">
+        The conditions have been created by a history of redlining and segregation, and are still present today.
+        </p>
+        <p style="margin: 0 0 0.75rem 0;">
+        Even decades after the end of redlining, the effects of redlining and segregation are still visible in the city.
+        </p>
+        <p style="margin: 0;">
+        This page explores the extent and distribution of tangled titles in Baltimore, and how they are related to historical and contemporary neighborhood disadvantage.
+        </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# -----------------------------------------------------------------------------
+# Research Questions (RQ cards; not an H2 in TOC)
+# -----------------------------------------------------------------------------
+st.markdown("### Research Questions")
+
 rq_cards = [
     (
         "RQ1",
@@ -674,14 +859,8 @@ rq_cards = [
         "In which Baltimore census tracts are tangled-title and at-risk properties concentrated, "
         "and what is the effect of historical redlining and contemporary segregation on these outcomes?",
     ),
-    (
-        "RQ3",
-        "Mortgage access and interest rates (optional)",
-        "How accessible are mortgage loans and at what cost (interest rates), and which areas appear "
-        "at higher tangled-title risk when homeownership, mortgage access, and property value are combined?",
-    ),
 ]
-rq_cols = st.columns(3)
+rq_cols = st.columns(2)
 for column, (tag, title, question) in zip(rq_cols, rq_cards):
     with column:
         st.markdown(
@@ -695,32 +874,101 @@ for column, (tag, title, question) in zip(rq_cols, rq_cards):
             unsafe_allow_html=True,
         )
 
-st.markdown("## Key Quantitative Takeaways")
-# TODO: Replace placeholder with narrative bullets once RQ1/RQ2 analysis is finalized.
+st.divider()
+
+# -----------------------------------------------------------------------------
+# Current situation: Baltimore headline metrics + interactive tract map
+# -----------------------------------------------------------------------------
+st.markdown("### Current Situation in Baltimore")
+
+st.markdown(
+    f"""
+    <style>
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark) {{
+        align-items: stretch !important;
+    }}
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        > div[data-testid="column"]:first-child {{
+        display: flex;
+        flex-direction: column;
+        font-size: 1.14rem;
+    }}
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        > div[data-testid="column"]:first-child > div {{
+        flex: 1 1 auto;
+        min-height: {_CITYWIDE_MAP_ROW_LEFT_MIN_HEIGHT_PX}px;
+    }}
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.quant-citywide-panel-root) {{
+        flex: 1 1 auto;
+        min-height: {_CITYWIDE_MAP_ROW_LEFT_MIN_HEIGHT_PX}px;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        font-size: 1.14rem;
+    }}
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.quant-citywide-panel-root)
+        > div[data-testid="stVerticalBlock"] {{
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 0;
+    }}
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.quant-citywide-panel-root)
+        [data-testid="stMetricContainer"] label p,
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.quant-citywide-panel-root)
+        [data-testid="stMetricContainer"] [data-testid="stMarkdownContainer"] p {{
+        font-size: 1.2rem !important;
+    }}
+    section[data-testid="stMain"] [data-testid="stHorizontalBlock"]:has(span.quant-citywide-map-row-mark)
+        div[data-testid="stVerticalBlockBorderWrapper"]:has(.quant-citywide-panel-root)
+        [data-testid="stCaption"] {{
+        font-size: 1.02rem !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+citywide_col, tract_map_col = st.columns([1, 1.5], gap="medium")
+with citywide_col:
+    st.markdown(
+        '<span class="quant-citywide-map-row-mark" style="display:none" aria-hidden="true"></span>',
+        unsafe_allow_html=True,
+    )
+    render_citywide_tract_summary_panel(baltimore_city_tracts(tracts))
+with tract_map_col:
+    render_interactive_map(tracts, geojson)
+
+st.divider()
+
+# =============================================================================
+# H2: Black Homeownership and Property Value
+# =============================================================================
+_quant_section_h2("quant-bh-property-value", "Black Homeownership and Property Value")
+
 st.markdown(
     """
-    <div class="soft-card">
-    <p><strong>Coming soon</strong> — narrative takeaways will be added once RQ1/RQ2 analysis is finalized.</p>
+    <div style="font-size: 1.0rem; line-height: 1.62; color: #18312d;">
+    <p style="margin: 0;">
+    Historical redlining and related credit-market discrimination concentrated Black residents in particular neighborhoods where
+    families acquired housing and passed it down across generations. Tangled title—ownership left unsettled
+    when property moves through intestate succession and informal, generational handoffs without a clear
+    legal chain—is fundamentally a problem of that intergenerational transfer of assets. It does not
+    occur at random across homeowners; it structurally skews toward Black homeowners.
+    </p>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-st.markdown("## Burden and Equity Evidence")
-render_metric_cards(tracts)
-
-st.markdown("## Interactive Tract Explorer")
-render_interactive_map(tracts, geojson)
-
-st.markdown("## Black Homeownership and Property Value")
-
-st.markdown("#### Map view: Black population and median property value")
-st.caption(
-    "Left: Black population share by tract. Right: FFIEC HMDA median property value, with a toggle "
-    "between all applicants and Black applicants."
-)
 left_map, right_map = st.columns(2)
 with left_map:
+    st.markdown("#### Black population Percentage")
     render_demographic_property_value_map(
         tracts,
         geojson,
@@ -731,6 +979,7 @@ with left_map:
         selectbox_key="demo_metric_left",
     )
 with right_map:
+    st.markdown("#### Median property value")
     render_demographic_property_value_map(
         tracts,
         geojson,
@@ -742,6 +991,73 @@ with right_map:
         selectbox_key="pv_metric_right",
     )
 
+st.divider()
+
+# =============================================================================
+# H2: Historical Context
+# =============================================================================
+_quant_section_h2("historical-context", "Historical Context behind the Situation")
+
+holc_intro_left, holc_intro_right = st.columns([0.62, 0.42], gap="large")
+with holc_intro_left:
+    st.markdown(
+        """
+        ### What is a HOLC legacy?
+        In the 1930s, the Home Owners' Loan Corporation (HOLC) graded neighborhoods
+        across American cities from A ("Best") to D ("Hazardous") — a practice known
+        as **redlining**. Grade D areas, marked in red, were predominantly Black
+        neighborhoods systematically denied mortgage lending and investment.
+        These historical boundaries continue to shape contemporary patterns of
+        wealth, property ownership, and neighborhood disadvantage in Baltimore today.
+
+        The intersectionality framework used here (Uzzi et al., 2023) combines
+        **historical advantage** (derived from HOLC legacy) with **contemporary
+        advantage** (ICE-based segregation index) to classify each census tract
+        into one of four groups shown below.
+        """
+    )
+
+    st.markdown("### Intersectionality Grouping (Uzzi et al., 2023)")
+
+    st.markdown(
+        """
+        The intersectionality framework used here (Uzzi et al., 2023) combines historical advantage (derived from HOLC legacy) with contemporary
+        advantage (ICE-based segregation index) to classify each census tract into one of four groups shown below.  
+        Mathematically, tract ICE is the difference between the affluent-tail count and the poor-tail count, divided by the tract denominator—the equation below states the same relationship in symbols.  
+        The Index of Concentration at the Extremes (ICE) is a measure of segregation that is calculated by the Census Bureau.
+        """
+    )
+    st.latex(
+        r"\mathrm{ICE}_t = \frac{A_t - P_t}{T_t}"
+    )
+    st.caption(
+        "Tract t: A = population at the affluent extreme, P = population at the poor extreme, "
+        "T = total population in the ICE denominator (tail cutoffs follow the variable definition in your tract table)."
+    )
+
+with holc_intro_right:
+    if HOLC_MAP_IMAGE.exists():
+        st.image(str(HOLC_MAP_IMAGE), width="stretch")
+        st.caption(
+            "Home Owner's Loan Corporation (HOLC) 1937 Map with Overlay of Neighborhoods in Baltimore, MD.\n"
+            "Source: Baltimore Sun"
+        )
+    else:
+        st.caption(f"HOLC map image not found: `{HOLC_MAP_IMAGE.name}`")
+
+
+
+group_hist_left, group_hist_right = st.columns(2)
+with group_hist_left:
+    st.markdown("#### Four Intersectionality Groups")
+    render_quadrant_diagram()
+with group_hist_right:
+    st.markdown("#### Tract distribution across Baltimore")
+    render_intersectionality_group_map(tracts, geojson)
+
+# -----------------------------------------------------------------------------
+# Black population × property value scatter (still under Black Homeownership H2)
+# -----------------------------------------------------------------------------
 st.markdown(
     "Tract-level relationship between **Black population share** and **median property value for "
     "Black applicants** (FFIEC HMDA). Bubble size reflects **tangled-title properties per 1,000 properties** "
@@ -750,25 +1066,197 @@ st.markdown(
 )
 render_black_homeownership_chart(tracts)
 
-st.markdown("## Intersectionality Group Context")
-st.markdown(
-    "Each Baltimore census tract is classified into one of four neighborhood groups by combining "
-    "**historical** advantage (e.g., redlining legacy) with **contemporary** advantage (e.g., ICE-based "
-    "segregation indicators), following the Uzzi et al. (2023) intersectionality framework. The "
-    "diagram on the left explains the 2x2 logic; the map on the right shows how the groups are "
-    "distributed across the city."
-)
-group_left, group_right = st.columns(2)
-with group_left:
-    st.markdown("#### Conceptual 2x2")
-    render_quadrant_diagram()
-with group_right:
-    st.markdown("#### Tract distribution")
-    render_intersectionality_group_map(tracts, geojson)
-
+# =============================================================================
+# H2: Intersectionality Analysis
+# =============================================================================
+_quant_section_h2("intersectionality-analysis", "Intersectionality Analysis")
 st.markdown("#### Metric distributions by intersectionality group")
 st.caption(
-    "Compare how tract-level metrics vary across the four intersectionality groups. Use the dropdown "
-    "to switch between burden, equity, demographic, and property-value metrics."
+    "Compare how tract-level metrics vary across the four intersectionality groups. "
+    "Use the dropdown to switch between burden, equity, demographic, and property-value metrics."
 )
 render_group_boxplots(tracts)
+
+# =============================================================================
+# Scroll spy: inject script (st.iframe) for sidebar "On this page" highlighting
+# =============================================================================
+_toc_sections_json = json.dumps([{"id": fid, "label": label} for fid, label in _QUANT_TOC_H2])
+_QUANT_TOC_SCROLL_SPY = """
+<script>
+(function () {
+    const W = window.parent;
+    const doc = W.document;
+    const sections = __SECTIONS_JSON__;
+    const markerSlackPx = 8;
+
+    function getMarkerPx() {
+        const id0 = sections.length ? sections[0].id : "";
+        const probe = id0 ? resolveHeading(id0) : null;
+        if (!probe) return 100;
+        const sm = parseFloat(W.getComputedStyle(probe).scrollMarginTop);
+        const base = Number.isFinite(sm) && sm > 0 ? sm : 72;
+        return Math.round(base + markerSlackPx);
+    }
+
+    if (typeof W.__quantTocCleanup === "function") {
+        try { W.__quantTocCleanup(); } catch (e) {}
+    }
+
+    function isVerticalScroller(el) {
+        if (!el || el.nodeType !== 1) return false;
+        const st = W.getComputedStyle(el);
+        const oy = st.overflowY;
+        if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return false;
+        return el.scrollHeight > el.clientHeight + 10;
+    }
+
+    /* Streamlit often scrolls a *descendant* of stMain, not an ancestor. Pick the largest overflow. */
+    function findLargestVerticalScrollerFrom(main) {
+        if (!main) return W;
+        let best = W;
+        let bestMax = Math.max(0, doc.documentElement.scrollHeight - W.innerHeight);
+        const consider = function (el) {
+            if (!isVerticalScroller(el)) return;
+            const m = el.scrollHeight - el.clientHeight;
+            if (m > bestMax) {
+                bestMax = m;
+                best = el;
+            }
+        };
+        let n = main;
+        while (n) {
+            consider(n);
+            n = n.parentElement;
+        }
+        main.querySelectorAll("*").forEach(consider);
+        return best;
+    }
+
+    function resolveHeading(secId) {
+        const main = doc.querySelector('[data-testid="stMain"]');
+        if (main) {
+            try {
+                const idSel = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(secId) : secId;
+                const found = main.querySelector("#" + idSel);
+                if (found) return found;
+            } catch (e) {}
+        }
+        return doc.getElementById(secId);
+    }
+
+    function setActive(id) {
+        sections.forEach(function (sec) {
+            const link = doc.getElementById("quant-toc-link-" + sec.id);
+            if (!link) return;
+            if (sec.id === id) link.classList.add("toc-active");
+            else link.classList.remove("toc-active");
+        });
+    }
+
+    function addScrollAncestors(start, set) {
+        let el = start;
+        while (el) {
+            const st = W.getComputedStyle(el);
+            const oy = st.overflowY;
+            if ((oy === "auto" || oy === "scroll" || oy === "overlay") && el.scrollHeight > el.clientHeight + 2) {
+                set.add(el);
+            }
+            el = el.parentElement;
+        }
+    }
+
+    function gatherScrollTargets() {
+        const targets = new Set();
+        targets.add(W);
+        const main = doc.querySelector('[data-testid="stMain"]');
+        if (main) {
+            const primary = findLargestVerticalScrollerFrom(main);
+            if (primary && primary !== W) targets.add(primary);
+            addScrollAncestors(main, targets);
+        }
+        const app = doc.querySelector('[data-testid="stAppViewContainer"]');
+        if (app) addScrollAncestors(app, targets);
+        doc.querySelectorAll('[data-testid="stVerticalBlockBorderWrapper"]').forEach(function (el) {
+            const st = W.getComputedStyle(el);
+            if ((st.overflowY === "auto" || st.overflowY === "scroll" || st.overflowY === "overlay") &&
+                el.scrollHeight > el.clientHeight + 2) {
+                targets.add(el);
+            }
+        });
+        return Array.from(targets);
+    }
+
+    /* Among headings at or above the reading band, pick the one with the largest viewport top.
+       "Last where top <= line" fails when later headings sit at negative tops inside a nested
+       scroller; max-top matches the heading that has advanced furthest while still not below band. */
+    function computeActive() {
+        const main = doc.querySelector('[data-testid="stMain"]');
+        if (!main) {
+            setActive(sections[0].id);
+            return;
+        }
+        const m = main.getBoundingClientRect();
+        const markerPx = getMarkerPx();
+        const line = m.top + Math.max(markerPx, Math.round(m.height * 0.26));
+        let bestId = sections[0].id;
+        let bestTop = -Infinity;
+        sections.forEach(function (sec) {
+            const el = resolveHeading(sec.id);
+            if (!el) return;
+            const top = el.getBoundingClientRect().top;
+            if (top > line) return;
+            if (top > bestTop) {
+                bestTop = top;
+                bestId = sec.id;
+            }
+        });
+        if (bestTop === -Infinity) bestId = sections[0].id;
+        setActive(bestId);
+    }
+
+    let raf = 0;
+    function onScrollOrResize() {
+        if (raf) return;
+        raf = W.requestAnimationFrame(function () {
+            raf = 0;
+            computeActive();
+        });
+    }
+
+    function bind() {
+        const scrollTargets = gatherScrollTargets();
+        W.__quantTocScrollTargets = [];
+        scrollTargets.forEach(function (t) {
+            t.addEventListener("scroll", onScrollOrResize, { passive: true });
+            W.__quantTocScrollTargets.push([t, onScrollOrResize]);
+        });
+        W.addEventListener("resize", onScrollOrResize, { passive: true });
+        W.__quantTocResizeHandler = onScrollOrResize;
+        W.__quantTocCleanup = function () {
+            (W.__quantTocScrollTargets || []).forEach(function (pair) {
+                pair[0].removeEventListener("scroll", pair[1]);
+            });
+            W.__quantTocScrollTargets = [];
+            if (W.__quantTocResizeHandler) {
+                W.removeEventListener("resize", W.__quantTocResizeHandler);
+                W.__quantTocResizeHandler = null;
+            }
+            W.__quantTocCleanup = null;
+        };
+        setTimeout(computeActive, 0);
+        setTimeout(computeActive, 250);
+        setTimeout(computeActive, 700);
+        setTimeout(computeActive, 1500);
+    }
+
+    if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", bind);
+    else bind();
+})();
+</script>
+"""
+st.iframe(
+    _QUANT_TOC_SCROLL_SPY.replace("__SECTIONS_JSON__", _toc_sections_json),
+    height=1,
+    width="stretch",
+    tab_index=-1,
+)
