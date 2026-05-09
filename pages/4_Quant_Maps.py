@@ -16,14 +16,51 @@ QUANT_DIR = DATA_DIR / "quant"
 
 TRACT_METRICS = QUANT_DIR / "quant_merged_data.csv"
 BALTIMORE_TRACTS_GEOJSON = QUANT_DIR / "baltimore_tracts.geojson"
+
+# Coerce after read_csv so currency/counts survive Excel/CSV quirks (commas, stray spaces).
+# Dollar / equity columns may arrive as strings with commas or $ from hand-edited CSVs.
+_TRACT_EQUITY_LIKE_COLUMNS: frozenset[str] = frozenset(
+    {
+        "tangled_net_equity",
+        "at_risk_net_equity",
+        "tangled_gross_positive_equity",
+        "at_risk_gross_positive_equity",
+        "tangled_gross_negative_equity",
+        "at_risk_gross_negative_equity",
+    }
+)
+
+_TRACT_METRICS_NUMERIC_COLUMNS: tuple[str, ...] = (
+    "intersectionality_group_id",
+    "tangled_properties",
+    "at_risk_properties",
+    "ratio",
+    "tangled_net_equity",
+    "at_risk_net_equity",
+    "tangled_gross_positive_equity",
+    "at_risk_gross_positive_equity",
+    "tangled_gross_negative_equity",
+    "at_risk_gross_negative_equity",
+    "black_population_percentage",
+    "median_property_value_total",
+    "median_property_value_black",
+    "total_properties",
+    "total_population",
+)
 INTRO_IMAGE = QUANT_DIR / "andra-c-taylor-jr-mM52YKqAER8-unsplash.jpg"
 HOLC_MAP_IMAGE = QUANT_DIR / "holc-map.png"
+PLACES_CASTHMA_TANGLED_LOESS_SVG = (
+    QUANT_DIR / "places_casthma_x_tangled_titles_numbers_per_10000_population_loess.svg"
+)
+CSA_LEVEL_LE_LOESS_SVG = QUANT_DIR / "20260509_CSA_level_LE_loess.svg"
 
 # Match `render_interactive_map` Plotly height + selectbox/caption slack; left column stretches to this min.
 _INTERACTIVE_TRACT_MAP_FIG_HEIGHT_PX = 560
 _CITYWIDE_MAP_ROW_LEFT_MIN_HEIGHT_PX = _INTERACTIVE_TRACT_MAP_FIG_HEIGHT_PX + 220
 # Quadrant diagram + tract group map (same Streamlit row): shared Plotly height for visual alignment.
 _QUADRANT_GROUP_MAP_ROW_FIG_HEIGHT_PX = 480
+# Black population scatter + intersectionality boxplots (same Streamlit row): matched Plotly height.
+_IMPACT_SCATTER_BOXPLOT_ROW_FIG_HEIGHT_PX = 520
 
 GROUP_COLORS = {
     "Sustained advantage": "#a9c77b",
@@ -39,6 +76,27 @@ GROUP_ORDER = [
     "Sustained disadvantage",
     "Excluded from analysis",
 ]
+
+# Column specs for `render_group_boxplots` (label -> column name, axis unit, value tick format).
+# Dict order is the selectbox order; Black population is first by default.
+GROUP_BOXPLOT_METRIC_SPECS: dict[str, tuple[str, str, str]] = {
+    "Black population (%)": ("black_population_percentage", "%", ":.1f"),
+    "Median property value, all (USD)": ("median_property_value_total", "$", ":,.0f"),
+    "Median property value, Black (USD)": ("median_property_value_black", "$", ":,.0f"),
+    "Tangled-title properties (per 1,000 properties)": (
+        "tangled_properties_per_1000",
+        "rate",
+        ":,.1f",
+    ),
+    "At-risk properties (per 1,000 properties)": (
+        "at_risk_properties_per_1000",
+        "rate",
+        ":,.1f",
+    ),
+    "Tangled / at-risk ratio": ("ratio", "ratio", ":.3f"),
+    "Tangled net equity (USD)": ("tangled_net_equity", "$", ":,.0f"),
+    "At-risk net equity (USD)": ("at_risk_net_equity", "$", ":,.0f"),
+}
 
 # (fragment id, H2 title) for in-page sidebar TOC on this page only.
 _QUANT_TOC_H2: tuple[tuple[str, str], ...] = (
@@ -61,10 +119,34 @@ apply_theme()
 
 
 @st.cache_data(show_spinner=False)
+def _series_to_numeric_loose(series: pd.Series) -> pd.Series:
+    """Parse numbers; strip $, commas, and spaces if plain to_numeric fails."""
+    first = pd.to_numeric(series, errors="coerce")
+    if first.notna().any():
+        return first
+    cleaned = (
+        series.astype("string")
+        .str.replace(r"[$,\s]", "", regex=True)
+        .replace({"": pd.NA, "nan": pd.NA, "None": pd.NA, "<NA>": pd.NA})
+    )
+    return pd.to_numeric(cleaned, errors="coerce")
+
+
 def load_tract_metrics(mtime: float | None = None) -> pd.DataFrame | None:
     if not TRACT_METRICS.exists():
         return None
-    df = pd.read_csv(TRACT_METRICS)
+    df = pd.read_csv(TRACT_METRICS, encoding="utf-8-sig")
+    df.columns = [str(c).lstrip("\ufeff").strip() for c in df.columns]
+    # Rare alternate headers from exports
+    _alias = {"at-risk_net_equity": "at_risk_net_equity", "At_risk_net_equity": "at_risk_net_equity"}
+    df = df.rename(columns={a: b for a, b in _alias.items() if a in df.columns})
+    for col in _TRACT_METRICS_NUMERIC_COLUMNS:
+        if col not in df.columns:
+            continue
+        if col in _TRACT_EQUITY_LIKE_COLUMNS:
+            df[col] = _series_to_numeric_loose(df[col])
+        else:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
     if "GEOID" in df.columns:
         df["GEOID"] = df["GEOID"].astype("string").str.replace(r"\.0$", "", regex=True).str.zfill(11)
     return df
@@ -105,6 +187,32 @@ def baltimore_city_tracts(tracts: pd.DataFrame | None) -> pd.DataFrame:
     if "GEOID" in tracts.columns:
         return tracts[tracts["GEOID"].astype(str).str.startswith("24510")].copy()
     return tracts.copy()
+
+
+def _enrich_city_boxplot_derived_columns(city: pd.DataFrame) -> None:
+    """Add per-1,000-property burden columns for group boxplots (mutates `city` in place)."""
+    if {"tangled_properties", "total_properties"}.issubset(city.columns):
+        denominator = city["total_properties"].where(city["total_properties"] > 0)
+        city["tangled_properties_per_1000"] = (city["tangled_properties"] / denominator) * 1000
+    if {"at_risk_properties", "total_properties"}.issubset(city.columns):
+        denominator = city["total_properties"].where(city["total_properties"] > 0)
+        city["at_risk_properties_per_1000"] = (city["at_risk_properties"] / denominator) * 1000
+
+
+def _group_boxplot_selectable_metric_labels(tracts: pd.DataFrame | None) -> list[str] | None:
+    """Metric labels available for the group boxplot selectbox, or None if the boxplot cannot be built."""
+    if tracts is None or "intersectionality_group" not in tracts.columns:
+        return None
+    city = baltimore_city_tracts(tracts).copy()
+    if city.empty:
+        return None
+    _enrich_city_boxplot_derived_columns(city)
+    available = {
+        label: spec for label, spec in GROUP_BOXPLOT_METRIC_SPECS.items() if spec[0] in city.columns
+    }
+    if not available:
+        return None
+    return list(available.keys())
 
 
 def render_citywide_tract_summary_panel(baltimore: pd.DataFrame) -> None:
@@ -217,24 +325,47 @@ def render_interactive_map(tracts: pd.DataFrame | None, geojson: dict | None) ->
         hover_data["at_risk_properties"] = ":,.0f"
     if "ratio" in map_data.columns:
         hover_data["ratio"] = ":.3f"
+    if "tangled_net_equity" in map_data.columns:
+        hover_data["tangled_net_equity"] = ":$,.0f"
+    if "at_risk_net_equity" in map_data.columns:
+        hover_data["at_risk_net_equity"] = ":$,.0f"
     if "intersectionality_group" in map_data.columns:
         hover_data["intersectionality_group"] = True
+    # Ensure the choropleth color variable appears in the tooltip (Plotly can omit it when hover_data is set).
+    if selected_col not in hover_data:
+        hover_data[selected_col] = ":$,.0f" if selected_col in ("tangled_net_equity", "at_risk_net_equity") else True
 
-    map_fig = px.choropleth_map(
-        map_data,
+    _equity_map_cols = frozenset({"tangled_net_equity", "at_risk_net_equity"})
+    _map_kw: dict = dict(
+        data_frame=map_data,
         geojson=geojson,
         locations="GEOID",
         featureidkey="properties.GEOID",
         color=selected_col,
         hover_name="GEOID",
         hover_data=hover_data or None,
-        color_continuous_scale=["#fff7dc", "#efc267", "#a9c77b", "#294943"],
         map_style="carto-positron",
         center={"lat": 39.299, "lon": -76.61},
         zoom=10,
         opacity=0.78,
         height=_INTERACTIVE_TRACT_MAP_FIG_HEIGHT_PX,
     )
+    if selected_col in _equity_map_cols:
+        # Signed dollars: a sequential cream→green scale collapses contrast when one tract is a huge outlier.
+        abs_s = map_data[selected_col].dropna().abs()
+        if len(abs_s) > 0:
+            vmax = float(abs_s.quantile(0.98))
+            if vmax == 0 or pd.isna(vmax):
+                vmax = max(float(abs_s.max()), 1.0)
+        else:
+            vmax = 1.0
+        _map_kw["color_continuous_scale"] = "RdBu_r"
+        _map_kw["color_continuous_midpoint"] = 0
+        _map_kw["range_color"] = (-vmax, vmax)
+    else:
+        _map_kw["color_continuous_scale"] = ["#fff7dc", "#efc267", "#a9c77b", "#294943"]
+
+    map_fig = px.choropleth_map(**_map_kw)
     map_fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
     st.plotly_chart(map_fig, width="stretch")
 
@@ -263,28 +394,19 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
     has_total = "total_properties" in chart_df.columns
     has_tangled = "tangled_properties" in chart_df.columns
 
-    if has_population:
-        tangled = (
-            chart_df["tangled_properties"].fillna(0).astype(float)
-            if has_tangled
-            else pd.Series(0.0, index=chart_df.index, dtype=float)
-        )
-        denom = chart_df["total_population"].astype(float)
-        chart_df["tangled_per_10000_population"] = (tangled / denom.where(denom > 0)) * 10000.0
-        size_col = "tangled_per_10000_population"
-        size_legend = "Tangled per 10,000 population"
+    if has_total and has_tangled:
+        denom = chart_df["total_properties"].astype(float)
+        tangled = chart_df["tangled_properties"].fillna(0).astype(float)
+        chart_df["tangled_properties_per_1000"] = (tangled / denom.where(denom > 0)) * 1000.0
+        size_col = "tangled_properties_per_1000"
+        size_legend = "Tangled per 1,000 properties"
         plot_df = chart_df.dropna(subset=[size_col]).copy()
-        n_dropped = len(chart_df) - len(plot_df)
-        if n_dropped:
-            st.caption(
-                f"{n_dropped} tract(s) omitted from this chart: missing `total_population` or "
-                "`total_population` ≤ 0 (cannot compute tangled per 10,000 population)."
-            )
     else:
         st.info(
-            "`total_population` (ACS B01003_001 total population) is missing from the loaded "
-            "`quant_merged_data.csv`. Falling back to tangled-title property counts for bubble size. "
-            "Re-render `20260507_data_merge.qmd` and reload Streamlit to enable the per-10,000-population view."
+            "`total_properties` (ACS B25003_001 occupied housing units) is missing from the loaded "
+            "`quant_merged_data.csv`, or `tangled_properties` is missing. Falling back to tangled-title "
+            "property counts for bubble size. Re-render `20260507_data_merge.qmd` and reload Streamlit "
+            "to use the per-1,000-properties view."
         )
         if has_tangled:
             chart_df["tangled_count_size"] = chart_df["tangled_properties"].fillna(0).clip(lower=0) + 1
@@ -307,9 +429,10 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
         hover_data["tangled_properties"] = ":,.0f"
     if has_population:
         hover_data["total_population"] = ":,.0f"
-        hover_data["tangled_per_10000_population"] = ":,.2f"
     if has_total:
         hover_data["total_properties"] = ":,.0f"
+    if size_col == "tangled_properties_per_1000":
+        hover_data["tangled_properties_per_1000"] = ":,.2f"
     if "intersectionality_group" in plot_df.columns:
         hover_data["intersectionality_group"] = True
     if size_col not in hover_data:
@@ -331,7 +454,7 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
             "tangled_properties": "Tangled-title properties",
             "total_population": "Total population (ACS B01003_001)",
             "total_properties": "Total properties (ACS B25003_001)",
-            "tangled_per_10000_population": "Tangled per 10,000 population",
+            "tangled_properties_per_1000": "Tangled per 1,000 properties",
             "tangled_count_size": size_legend,
         },
     )
@@ -343,28 +466,38 @@ def render_black_homeownership_chart(tracts: pd.DataFrame | None) -> None:
     fig = px.scatter(**scatter_kwargs)
     fig.update_traces(marker=dict(line=dict(width=1, color="#294943"), opacity=0.85))
     fig.update_layout(
-        height=480,
-        margin=dict(l=10, r=10, t=10, b=10),
+        height=_IMPACT_SCATTER_BOXPLOT_ROW_FIG_HEIGHT_PX,
+        margin=dict(l=10, r=10, t=10, b=120),
         plot_bgcolor="#fff9e6",
         paper_bgcolor="#fff9e6",
-        legend=dict(title="Group", orientation="h", yanchor="bottom", y=-0.25, x=0),
+        legend=dict(
+            title="Group",
+            orientation="h",
+            yanchor="top",
+            y=-0.14,
+            x=0.5,
+            xanchor="center",
+        ),
         xaxis=dict(showgrid=True, gridcolor="rgba(41, 73, 67, 0.12)", ticksuffix="%"),
         yaxis=dict(showgrid=True, gridcolor="rgba(41, 73, 67, 0.12)", tickprefix="$", tickformat=",.0f"),
     )
+    guide = (
+        "Each point is a Baltimore City census tract. **Horizontal axis:** Black population share (%). "
+        "**Vertical axis:** FFIEC median property value for Black applicants (USD). "
+    )
+    if "intersectionality_group" in chart_df.columns:
+        guide += (
+            "**Color:** intersectionality group. **Legend:** click a group name to hide or show that series; "
+            "double-click a name to show only that group (double-click again to restore all). "
+        )
+    guide += f"**Bubble size:** {size_legend.lower()}."
+    if size_col == "tangled_properties_per_1000":
+        guide += (
+            " Denominator for the rate is ACS 2019 5-year occupied housing units per tract (B25003_001)."
+        )
     st.plotly_chart(fig, width="stretch")
-    if has_population:
-        st.caption(
-            "Each dot is a Baltimore City census tract. X = Black population share; Y = FFIEC median "
-            "property value for Black applicants; bubble size = tangled-title properties per 10,000 "
-            "residents (ACS 2019 5-year B01003_001 total population as denominator). Tracts with missing "
-            "FFIEC values for Black applicants are dropped."
-        )
-    else:
-        st.caption(
-            "Each dot is a Baltimore City census tract. X = Black population share; Y = FFIEC median "
-            "property value for Black applicants; bubble size = tangled-title property count (fallback). "
-            "Tracts with missing FFIEC values for Black applicants are dropped."
-        )
+    st.markdown(guide)
+    st.caption("Tracts with missing FFIEC median values for Black applicants are omitted from the plot.")
 
 
 def render_demographic_property_value_map(
@@ -680,7 +813,11 @@ def render_intersectionality_group_map(tracts: pd.DataFrame | None, geojson: dic
     st.plotly_chart(map_fig, width="stretch")
 
 
-def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
+def render_group_boxplots(
+    tracts: pd.DataFrame | None,
+    *,
+    selected_metric_label: str | None = None,
+) -> None:
     if tracts is None:
         st.warning("Cannot show boxplots: tract metrics CSV is missing.")
         return
@@ -693,45 +830,26 @@ def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
         st.warning("No Baltimore City tracts available for boxplots.")
         return
 
-    if {"tangled_properties", "total_properties"}.issubset(city.columns):
-        denominator = city["total_properties"].where(city["total_properties"] > 0)
-        city["tangled_properties_per_1000"] = (
-            city["tangled_properties"] / denominator
-        ) * 1000
-    if {"at_risk_properties", "total_properties"}.issubset(city.columns):
-        denominator = city["total_properties"].where(city["total_properties"] > 0)
-        city["at_risk_properties_per_1000"] = (
-            city["at_risk_properties"] / denominator
-        ) * 1000
+    _enrich_city_boxplot_derived_columns(city)
 
-    metric_options = {
-        "Tangled-title properties (count)": ("tangled_properties", "count", ":,.0f"),
-        "At-risk properties (count)": ("at_risk_properties", "count", ":,.0f"),
-        "Tangled-title properties (per 1,000 properties)": (
-            "tangled_properties_per_1000",
-            "rate",
-            ":,.1f",
-        ),
-        "At-risk properties (per 1,000 properties)": (
-            "at_risk_properties_per_1000",
-            "rate",
-            ":,.1f",
-        ),
-        "Tangled / at-risk ratio": ("ratio", "ratio", ":.3f"),
-        "Tangled net equity (USD)": ("tangled_net_equity", "$", ":,.0f"),
-        "At-risk net equity (USD)": ("at_risk_net_equity", "$", ":,.0f"),
-        "Black population (%)": ("black_population_percentage", "%", ":.1f"),
-        "Median property value, all (USD)": ("median_property_value_total", "$", ":,.0f"),
-        "Median property value, Black (USD)": ("median_property_value_black", "$", ":,.0f"),
+    available = {
+        label: spec for label, spec in GROUP_BOXPLOT_METRIC_SPECS.items() if spec[0] in city.columns
     }
-    available = {label: spec for label, spec in metric_options.items() if spec[0] in city.columns}
     if not available:
         st.warning("No metrics available for boxplots.")
         return
 
-    selected_label = st.selectbox(
-        "Choose metric for the boxplot", list(available.keys()), key="group_boxplot_metric"
-    )
+    if selected_metric_label is None:
+        selected_label = st.selectbox(
+            "Choose metric for the boxplot", list(available.keys()), key="group_boxplot_metric"
+        )
+    elif selected_metric_label not in available:
+        st.warning(
+            f"Metric `{selected_metric_label}` is not available for boxplots; choose another from the list."
+        )
+        return
+    else:
+        selected_label = selected_metric_label
     selected_col, axis_unit, _value_fmt = available[selected_label]
 
     plot_df = city.dropna(subset=["intersectionality_group", selected_col]).copy()
@@ -752,6 +870,12 @@ def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
         .astype(int)
     )
 
+    box_hover = {
+        "GEOID": True,
+        "intersectionality_group": False,
+        selected_col: (":$,.0f" if axis_unit == "$" else True),
+    }
+
     fig = px.box(
         plot_df,
         x="intersectionality_group",
@@ -760,11 +884,7 @@ def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
         category_orders={"intersectionality_group": GROUP_ORDER},
         color_discrete_map=GROUP_COLORS,
         points="all",
-        hover_data={
-            "GEOID": True,
-            "intersectionality_group": False,
-            selected_col: True,
-        },
+        hover_data=box_hover,
         labels={
             "intersectionality_group": "Intersectionality group",
             selected_col: selected_label,
@@ -799,7 +919,7 @@ def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
         for group in GROUP_ORDER
     ]
     fig.update_layout(
-        height=520,
+        height=_IMPACT_SCATTER_BOXPLOT_ROW_FIG_HEIGHT_PX,
         margin=dict(l=10, r=10, t=70, b=10),
         plot_bgcolor="#fff9e6",
         paper_bgcolor="#fff9e6",
@@ -820,6 +940,39 @@ def render_group_boxplots(tracts: pd.DataFrame | None) -> None:
         f"y-axis shows {selected_label.lower()}. Tracts with missing values for the selected metric "
         "are dropped before counting."
     )
+
+
+def render_health_outcomes_chart(tracts: pd.DataFrame | None) -> None:
+    """PLACES current asthma vs tangled-title rate (pre-rendered loess from MPPPH analysis)."""
+    _ = tracts
+    if not PLACES_CASTHMA_TANGLED_LOESS_SVG.exists():
+        st.warning(
+            "Health outcomes figure is missing (expected "
+            f"`{PLACES_CASTHMA_TANGLED_LOESS_SVG.name}` under `data/quant/`)."
+        )
+        return
+    st.markdown("### PLACES current asthma vs tangled-title burden")
+    st.caption(
+        "CDC PLACES model-based current asthma prevalence (tract) vs tangled-title properties per "
+        "10,000 residents (ACS tract population). LOESS smooth with confidence band."
+    )
+    st.image(str(PLACES_CASTHMA_TANGLED_LOESS_SVG), width="stretch")
+
+
+def render_csa_life_expectancy_loess_panel() -> None:
+    """CSA-level 2018 life expectancy vs tangled titles (pre-rendered loess)."""
+    if not CSA_LEVEL_LE_LOESS_SVG.exists():
+        st.warning(
+            "Life expectancy figure is missing (expected "
+            f"`{CSA_LEVEL_LE_LOESS_SVG.name}` under `data/quant/`)."
+        )
+        return
+    st.markdown("### Life expectancy (2018) vs tangled titles by CSA")
+    st.caption(
+        "Community Statistical Area aggregates: 2018 life expectancy vs tangled titles per 10,000; "
+        "LOESS by intersectionality group (y-axis reversed so higher life expectancy reads toward the bottom)."
+    )
+    st.image(str(CSA_LEVEL_LE_LOESS_SVG), width="stretch")
 
 
 # =============================================================================
@@ -1177,11 +1330,51 @@ with group_hist_right:
     st.markdown("#### Tract distribution across Baltimore")
     render_intersectionality_group_map(tracts, geojson)
 
+st.divider()
+
+# =============================================================================
+# H2: Impact of Historical Disadvantage and Contemporary Disadvantage
+# =============================================================================
+
+_quant_section_h2(
+    "impact-of-historical-contemporary-disadvantage",
+    "Impact of Historical Disadvantage and Contemporary Disadvantage",
+)
+
+# -----------------------------------------------------------------------------
+# Scatter (left) + boxplots (right), under Impact of Historical / Contemporary Disadvantage H2
+# Boxplot metric selectbox sits under the right-hand H3 (replacing the former caption in that column).
+# -----------------------------------------------------------------------------
+_impact_boxplot_metric_labels = _group_boxplot_selectable_metric_labels(tracts)
+_impact_selected_box_metric: str | None = None
+
+_impact_scatter_box_titles_l, _impact_scatter_box_titles_r = st.columns(2, gap="medium")
+with _impact_scatter_box_titles_l:
+    st.markdown("### Black population share and median property value for Black applicants")
+    st.caption(
+        "Tract-level FFIEC medians for Black applicants vs Black population share; "
+        "the note below the scatter explains axes, color, bubble size, and the legend."
+    )
+with _impact_scatter_box_titles_r:
+    st.markdown("### Metric distributions by intersectionality group")
+    if _impact_boxplot_metric_labels:
+        _impact_selected_box_metric = st.selectbox(
+            "Choose metric for the boxplot",
+            _impact_boxplot_metric_labels,
+            key="group_boxplot_metric",
+        )
+
+_impact_scatter_box_charts_l, _impact_scatter_box_charts_r = st.columns(2, gap="medium")
+with _impact_scatter_box_charts_l:
+    render_black_homeownership_chart(tracts)
+with _impact_scatter_box_charts_r:
+    render_group_boxplots(tracts, selected_metric_label=_impact_selected_box_metric)
+
 # Table 1 values from TanglesTitles_MPPPH/analysis/20260504_intersectionality_explore/
 # 20260504_intersectionality_explore.html (knitr::kable black_pct_by_group; inner join n=199).
-# Mean tangled (per 10,000) / Mean at-risk (per 10,000): tract means of
-# (tangled_properties or at_risk_properties) / total_population * 10000 by intersectionality_group
-# from data/quant/quant_merged_data.csv (same tract sets as n=).
+# Mean tangled (per 1,000 properties) / Mean at-risk (per 1,000 properties): tract means of
+# (tangled_properties or at_risk_properties) / total_properties * 1000 by intersectionality_group
+# (Baltimore city tracts in data/quant/quant_merged_data.csv; tracts with total_properties <= 0 omitted from those means).
 _INTERSECTIONAL_GROUP_SUMMARY_TABLE = pd.DataFrame(
     {
         "Intersectional group": [
@@ -1194,8 +1387,8 @@ _INTERSECTIONAL_GROUP_SUMMARY_TABLE = pd.DataFrame(
         "Mean black %": [53.65, 24.53, 89.34, 83.76, 56.70],
         "Median black %": [56.25, 16.50, 89.20, 88.10, 69.80],
         "SD black %": [27.32, 21.28, 5.96, 12.76, 32.18],
-        "Mean tangled (per 10,000)": [25.67, 24.99, 69.10, 93.34, 20.27],
-        "Mean at-risk (per 10,000)": [15.24, 18.15, 14.42, 14.28, 10.39],
+        "Mean tangled (per 1,000 properties)": [7.07, 6.01, 18.70, 25.77, 5.34],
+        "Mean at-risk (per 1,000 properties)": [4.38, 4.09, 3.95, 3.89, 2.60],
     }
 )
 
@@ -1211,38 +1404,11 @@ st.dataframe(
 st.caption(
     "Black % columns: tract-level black_pct_of_pop (FFIEC HMDA explorer CSV), by intersectional assignment "
     "(20260502_uzzi_replicate_latestdata_geoid_intersectional_group.csv); inner join on GEOID (n matched = 199). "
-    "Tangled / at-risk columns: mean tract rate per 10,000 residents (ACS B01003_001 total_population in "
-    "`quant_merged_data.csv`)."
+    "Tangled / at-risk columns: mean tract rate per 1,000 occupied housing units (ACS B25003_001 "
+    "`total_properties` in `quant_merged_data.csv`; tracts with total_properties ≤ 0 excluded from those means)."
 )
 
 st.divider()
-
-# =============================================================================
-# H2: Impact of Historical Disadvantage and Contemporary Disadvantage
-# =============================================================================
-
-_quant_section_h2(
-    "impact-of-historical-contemporary-disadvantage",
-    "Impact of Historical Disadvantage and Contemporary Disadvantage",
-)
-
-# -----------------------------------------------------------------------------
-# Scatter (left) + boxplots (right), under Impact of Historical / Contemporary Disadvantage H2
-# -----------------------------------------------------------------------------
-scatter_col, boxplot_col = st.columns(2, gap="medium")
-with scatter_col:
-    st.markdown("### Black population share and median property value for Black applicants")
-    st.markdown(
-        "Bubble size reflects tangled-title properties per 10,000 residents "
-        "(ACS 2019 5-year tract total population, B01003_001)."
-    )
-    render_black_homeownership_chart(tracts)
-with boxplot_col:
-    st.markdown("### Metric distributions by intersectionality group")
-    st.caption(
-        "Compare how tract-level metrics vary across the four intersectionality groups."
-    )
-    render_group_boxplots(tracts)
 
 # =============================================================================
 # H2: Association with health outcomes
@@ -1253,8 +1419,11 @@ _quant_section_h2(
     "Association with health outcomes",
 )
 
-st.markdown("### Association with health outcomes")
-render_health_outcomes_chart(tracts)
+_health_outcomes_col, _csa_le_col = st.columns(2, gap="medium")
+with _health_outcomes_col:
+    render_health_outcomes_chart(tracts)
+with _csa_le_col:
+    render_csa_life_expectancy_loess_panel()
 
 # =============================================================================
 # Scroll spy: inject script (st.iframe) for sidebar "On this page" highlighting
