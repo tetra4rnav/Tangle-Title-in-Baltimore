@@ -1,0 +1,13 @@
+# Streamlit app configuration
+# https://docs.streamlit.io/develop/api-reference/configuration/config.toml
+
+[theme]
+# Base font size (px) for the app root; spacing uses rem and scales with this value.
+# Requires a recent Streamlit version; if the key is ignored, upgrade Streamlit or set typography in shared_style.py.
+baseFontSize = 18
+
+# Align with shared_style palette (optional; uncomment to drive Streamlit widgets)
+# primaryColor = "#294943"
+# backgroundColor = "#fffaf0"
+# secondaryBackgroundColor = "#fff7dc"
+# textColor = "#18312d"
