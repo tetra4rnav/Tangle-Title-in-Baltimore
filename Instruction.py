@@ -1,6 +1,6 @@
 import streamlit as st
 
-from shared_style import apply_theme, support_badge
+from shared_style import apply_theme, render_page_toc, section_h2, support_badge
 
 
 st.set_page_config(
@@ -11,6 +11,13 @@ st.set_page_config(
 apply_theme()
 
 support_badge()
+
+INSTRUCTION_TOC = (
+    ("how-to-use-this-platform", "How to use this platform"),
+    ("synthesis-logic", "Synthesis Logic"),
+)
+
+render_page_toc("instruction", INSTRUCTION_TOC)
 
 st.title("Tangled Titles Synthesis Platform")
 
@@ -25,13 +32,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+section_h2("how-to-use-this-platform", "How to use this platform")
 st.markdown(
     """
     <div class="takeaway">
-    <strong>How to use this platform:</strong> begin with the Overview to understand
-    the resident pathway, then move through the Power Map, Interview Themes,
-    Quantitative Patterns, and Synthesis Matrix to build the final presentation
-    narrative.
+    Begin with the Introduction to understand the resident pathway, then move
+    through the Resident Journey, Quant Map, Interview, and Power Map to build
+    the final presentation narrative.
     </div>
     """,
     unsafe_allow_html=True,
@@ -45,9 +52,9 @@ with col1:
     st.markdown(
         """
         <div class="soft-card">
-            <h3>Explore the Power Map</h3>
-            <p>See barriers, facilitators, agencies, and structural determinants as
-            a connected system rather than isolated findings.</p>
+            <h3>Start with Introduction</h3>
+            <p>Understand the resident pathway and the core system question before
+            moving into the evidence pages.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -57,9 +64,9 @@ with col2:
     st.markdown(
         """
         <div class="soft-card">
-            <h3>See Interview Themes</h3>
-            <p>Connect lived experience and stakeholder interviews to specific
-            system nodes and intervention opportunities.</p>
+            <h3>Read the Resident Journey</h3>
+            <p>Connect the qualitative, quantitative, and systems evidence into a
+            presentation-ready synthesis.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -69,9 +76,9 @@ with col3:
     st.markdown(
         """
         <div class="soft-card">
-            <h3>View Spatial Patterns</h3>
-            <p>Use descriptive maps and charts to examine where title risk and
-            related wealth indicators are concentrated.</p>
+            <h3>Explore the Evidence</h3>
+            <p>Move through Quant Map, Interview, and Power Map to inspect
+            spatial patterns, themes, and system actors.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -79,7 +86,7 @@ with col3:
 
 st.write("")
 
-st.markdown("### Synthesis Logic")
+section_h2("synthesis-logic", "Synthesis Logic")
 st.markdown(
     """
     This site is organized as a synthesis product. Each page connects a different

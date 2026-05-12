@@ -1,4 +1,8 @@
+from html import escape
+import json
+
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 def apply_theme() -> None:
@@ -288,6 +292,101 @@ def apply_theme() -> None:
             color: var(--bwdc-teal-deep);
         }
 
+        .evidence-card {
+            border: 1px solid var(--bwdc-line);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 0.95rem;
+            margin: 0.45rem 0 0.75rem;
+            box-shadow: 0 8px 22px rgba(24, 49, 45, 0.045);
+        }
+
+        .evidence-card h3,
+        .evidence-card h4 {
+            margin: 0 0 0.35rem 0;
+            font-size: 1.02rem;
+            line-height: 1.28;
+        }
+
+        .evidence-card p {
+            margin: 0.35rem 0;
+            line-height: 1.48;
+        }
+
+        .evidence-card small,
+        .muted-note {
+            color: var(--bwdc-muted);
+        }
+
+        .mini-quote {
+            border-left: 4px solid var(--bwdc-gold);
+            padding: 0.35rem 0 0.35rem 0.65rem;
+            margin: 0.4rem 0;
+            color: var(--bwdc-teal-deep);
+            font-size: 0.95rem;
+            line-height: 1.42;
+            background: rgba(255, 247, 220, 0.58);
+        }
+
+        .badge-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin: 0.45rem 0;
+        }
+
+        .level-badge,
+        .type-badge,
+        .node-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.18rem 0.55rem;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border: 1px solid rgba(24, 49, 45, 0.14);
+            line-height: 1.2;
+        }
+
+        .type-badge {
+            background: var(--bwdc-teal);
+            color: #fffaf0;
+        }
+
+        .node-chip {
+            background: #f1f7df;
+            color: var(--bwdc-teal-deep);
+            font-weight: 600;
+        }
+
+        .hierarchy-level {
+            border-left: 6px solid var(--level-color, var(--bwdc-sage));
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 0.85rem;
+            margin: 0.75rem 0 1rem;
+        }
+
+        .hierarchy-level h3 {
+            margin-top: 0;
+        }
+
+        .central-issue-card {
+            border: 2px solid #4f8f5b;
+            background: #eef7e8;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.8rem 0 1.1rem;
+        }
+
+        .detail-panel {
+            border: 1px solid rgba(41, 73, 67, 0.24);
+            border-radius: 8px;
+            background: #fff7dc;
+            padding: 1rem;
+            margin: 0.7rem 0 1rem;
+        }
+
         .placeholder-map {
             border: 1px dashed rgba(41, 73, 67, 0.38);
             border-radius: 8px;
@@ -304,6 +403,85 @@ def apply_theme() -> None:
             font-weight: 700;
         }
 
+        .journey-figure {
+            margin: 0.25rem 0 0.5rem;
+        }
+
+        .journey-figure img {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(41, 73, 67, 0.18);
+            box-shadow: 0 12px 26px rgba(24, 49, 45, 0.12);
+            display: block;
+        }
+
+        .journey-figure figcaption {
+            margin-top: 0.45rem;
+            color: var(--bwdc-muted);
+            font-size: 0.9rem;
+            line-height: 1.35;
+        }
+
+        .journey-image-placeholder {
+            min-height: 260px;
+            border: 1px dashed rgba(41, 73, 67, 0.34);
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(215, 232, 189, 0.7), rgba(255, 247, 220, 0.9));
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .journey-image-placeholder.hero-placeholder {
+            min-height: 320px;
+        }
+
+        .journey-stage-card {
+            padding: 0.25rem 0 0.45rem;
+        }
+
+        .journey-stage-card h3 {
+            margin: 0.45rem 0 0.55rem;
+            font-size: 1.35rem;
+        }
+
+        .journey-stage-card p {
+            line-height: 1.55;
+        }
+
+        .journey-stage-meta,
+        .journey-stage-barrier {
+            display: grid;
+            grid-template-columns: minmax(150px, 0.34fr) 1fr;
+            gap: 0.85rem;
+            padding: 0.65rem 0;
+            border-top: 1px solid rgba(41, 73, 67, 0.12);
+            align-items: start;
+        }
+
+        .journey-stage-meta strong,
+        .journey-stage-barrier strong {
+            color: var(--bwdc-teal-deep);
+        }
+
+        .journey-stage-meta span,
+        .journey-stage-barrier span {
+            color: var(--bwdc-muted);
+            line-height: 1.42;
+        }
+
+        .journey-stage-barrier {
+            background: rgba(255, 247, 220, 0.72);
+            border-radius: 8px;
+            border: 1px solid rgba(239, 194, 103, 0.45);
+            padding: 0.72rem;
+            margin-top: 0.35rem;
+        }
+
         @media (max-width: 900px) {
             .scene-row {
                 grid-template-columns: 1fr;
@@ -314,6 +492,12 @@ def apply_theme() -> None:
                 top: auto;
                 bottom: -0.55rem;
                 transform: translateX(50%) rotate(135deg);
+            }
+
+            .journey-stage-meta,
+            .journey-stage-barrier {
+                grid-template-columns: 1fr;
+                gap: 0.22rem;
             }
         }
         </style>
@@ -332,3 +516,249 @@ def support_badge() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+
+def section_h2(fragment_id: str, title_plain: str) -> None:
+    """Native H2 with a stable DOM id for sidebar TOC links."""
+    st.header(title_plain, anchor=fragment_id)
+
+
+def render_page_toc(page_key: str, sections: tuple[tuple[str, str], ...]) -> None:
+    """Render a sidebar table of contents with scroll-position highlighting."""
+    if not sections:
+        return
+
+    safe_page_key = "".join(ch if ch.isalnum() or ch in "-_" else "-" for ch in page_key)
+    toc_root_id = f"{safe_page_key}-toc-root"
+    link_prefix = f"{safe_page_key}-toc-link-"
+    cleanup_name = f"__{safe_page_key}TocCleanup"
+    targets_name = f"__{safe_page_key}TocScrollTargets"
+    resize_name = f"__{safe_page_key}TocResizeHandler"
+    link_rows = "".join(
+        f'<a id="{link_prefix}{fragment_id}" class="page-toc-item{" toc-active" if idx == 0 else ""}" href="#{fragment_id}">{escape(label)}</a>'
+        for idx, (fragment_id, label) in enumerate(sections)
+    )
+    sections_json = json.dumps([{"id": fragment_id, "label": label} for fragment_id, label in sections])
+
+    with st.sidebar:
+        st.markdown(
+            f"""
+            <style>
+                section[data-testid="stMain"] h2 {{
+                    scroll-margin-top: 4.5rem;
+                }}
+                section[data-testid="stSidebar"] #{toc_root_id} {{
+                    font-family: inherit;
+                    margin: 0.15rem 0 0.9rem 0;
+                }}
+                section[data-testid="stSidebar"] #{toc_root_id} .page-toc-page-title {{
+                    font-size: 1em;
+                    font-weight: 600;
+                    color: #fffaf0 !important;
+                    letter-spacing: 0;
+                    margin: 0 0 0.5rem 0;
+                    padding: 0;
+                    text-decoration: none !important;
+                    border: none;
+                    box-shadow: none;
+                }}
+                section[data-testid="stSidebar"] #{toc_root_id} .page-toc-item {{
+                    display: block;
+                    margin: 0.08rem 0;
+                    padding: 0.38rem 0.45rem;
+                    border: 2px solid transparent !important;
+                    border-radius: 6px;
+                    color: rgba(255, 250, 240, 0.92) !important;
+                    text-decoration: none !important;
+                    font-size: 1em;
+                    line-height: inherit;
+                    font-weight: 500 !important;
+                }}
+                section[data-testid="stSidebar"] #{toc_root_id} .page-toc-item:hover {{
+                    background: rgba(239, 194, 103, 0.15) !important;
+                }}
+                section[data-testid="stSidebar"] #{toc_root_id} .page-toc-item.toc-active {{
+                    font-weight: 700 !important;
+                    color: #fffaf0 !important;
+                    border: 2px solid #efc267 !important;
+                    background: rgba(0, 0, 0, 0.18) !important;
+                }}
+            </style>
+            <div id="{toc_root_id}">
+                <p class="page-toc-page-title">On this page</p>
+                {link_rows}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    toc_scroll_spy = f"""
+    <script>
+    (function () {{
+        const W = window.parent;
+        const doc = W.document;
+        const sections = {sections_json};
+        const markerSlackPx = 8;
+
+        function getMarkerPx() {{
+            const id0 = sections.length ? sections[0].id : "";
+            const probe = id0 ? resolveHeading(id0) : null;
+            if (!probe) return 100;
+            const sm = parseFloat(W.getComputedStyle(probe).scrollMarginTop);
+            const base = Number.isFinite(sm) && sm > 0 ? sm : 72;
+            return Math.round(base + markerSlackPx);
+        }}
+
+        if (typeof W.{cleanup_name} === "function") {{
+            try {{ W.{cleanup_name}(); }} catch (e) {{}}
+        }}
+
+        function isVerticalScroller(el) {{
+            if (!el || el.nodeType !== 1) return false;
+            const st = W.getComputedStyle(el);
+            const oy = st.overflowY;
+            if (oy !== "auto" && oy !== "scroll" && oy !== "overlay") return false;
+            return el.scrollHeight > el.clientHeight + 10;
+        }}
+
+        function findLargestVerticalScrollerFrom(main) {{
+            if (!main) return W;
+            let best = W;
+            let bestMax = Math.max(0, doc.documentElement.scrollHeight - W.innerHeight);
+            const consider = function (el) {{
+                if (!isVerticalScroller(el)) return;
+                const m = el.scrollHeight - el.clientHeight;
+                if (m > bestMax) {{
+                    bestMax = m;
+                    best = el;
+                }}
+            }};
+            let n = main;
+            while (n) {{
+                consider(n);
+                n = n.parentElement;
+            }}
+            main.querySelectorAll("*").forEach(consider);
+            return best;
+        }}
+
+        function resolveHeading(secId) {{
+            const main = doc.querySelector('[data-testid="stMain"]');
+            if (main) {{
+                try {{
+                    const idSel = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(secId) : secId;
+                    const found = main.querySelector("#" + idSel);
+                    if (found) return found;
+                }} catch (e) {{}}
+            }}
+            return doc.getElementById(secId);
+        }}
+
+        function setActive(id) {{
+            sections.forEach(function (sec) {{
+                const link = doc.getElementById("{link_prefix}" + sec.id);
+                if (!link) return;
+                if (sec.id === id) link.classList.add("toc-active");
+                else link.classList.remove("toc-active");
+            }});
+        }}
+
+        function addScrollAncestors(start, set) {{
+            let el = start;
+            while (el) {{
+                const st = W.getComputedStyle(el);
+                const oy = st.overflowY;
+                if ((oy === "auto" || oy === "scroll" || oy === "overlay") && el.scrollHeight > el.clientHeight + 2) {{
+                    set.add(el);
+                }}
+                el = el.parentElement;
+            }}
+        }}
+
+        function gatherScrollTargets() {{
+            const targets = new Set();
+            targets.add(W);
+            const main = doc.querySelector('[data-testid="stMain"]');
+            if (main) {{
+                const primary = findLargestVerticalScrollerFrom(main);
+                if (primary && primary !== W) targets.add(primary);
+                addScrollAncestors(main, targets);
+            }}
+            const app = doc.querySelector('[data-testid="stAppViewContainer"]');
+            if (app) addScrollAncestors(app, targets);
+            doc.querySelectorAll('[data-testid="stVerticalBlockBorderWrapper"]').forEach(function (el) {{
+                const st = W.getComputedStyle(el);
+                if ((st.overflowY === "auto" || st.overflowY === "scroll" || st.overflowY === "overlay") &&
+                    el.scrollHeight > el.clientHeight + 2) {{
+                    targets.add(el);
+                }}
+            }});
+            return Array.from(targets);
+        }}
+
+        function computeActive() {{
+            const main = doc.querySelector('[data-testid="stMain"]');
+            if (!main) {{
+                setActive(sections[0].id);
+                return;
+            }}
+            const m = main.getBoundingClientRect();
+            const markerPx = getMarkerPx();
+            const line = m.top + Math.max(markerPx, Math.round(m.height * 0.26));
+            let bestId = sections[0].id;
+            let bestTop = -Infinity;
+            sections.forEach(function (sec) {{
+                const el = resolveHeading(sec.id);
+                if (!el) return;
+                const top = el.getBoundingClientRect().top;
+                if (top > line) return;
+                if (top > bestTop) {{
+                    bestTop = top;
+                    bestId = sec.id;
+                }}
+            }});
+            if (bestTop === -Infinity) bestId = sections[0].id;
+            setActive(bestId);
+        }}
+
+        let raf = 0;
+        function onScrollOrResize() {{
+            if (raf) return;
+            raf = W.requestAnimationFrame(function () {{
+                raf = 0;
+                computeActive();
+            }});
+        }}
+
+        function bind() {{
+            const scrollTargets = gatherScrollTargets();
+            W.{targets_name} = [];
+            scrollTargets.forEach(function (t) {{
+                t.addEventListener("scroll", onScrollOrResize, {{ passive: true }});
+                W.{targets_name}.push([t, onScrollOrResize]);
+            }});
+            W.addEventListener("resize", onScrollOrResize, {{ passive: true }});
+            W.{resize_name} = onScrollOrResize;
+            W.{cleanup_name} = function () {{
+                (W.{targets_name} || []).forEach(function (pair) {{
+                    pair[0].removeEventListener("scroll", pair[1]);
+                }});
+                W.{targets_name} = [];
+                if (W.{resize_name}) {{
+                    W.removeEventListener("resize", W.{resize_name});
+                    W.{resize_name} = null;
+                }}
+                W.{cleanup_name} = null;
+            }};
+            setTimeout(computeActive, 0);
+            setTimeout(computeActive, 250);
+            setTimeout(computeActive, 700);
+            setTimeout(computeActive, 1500);
+        }}
+
+        if (doc.readyState === "loading") doc.addEventListener("DOMContentLoaded", bind);
+        else bind();
+    }})();
+    </script>
+    """
+    components.html(toc_scroll_spy, height=1, scrolling=False)
