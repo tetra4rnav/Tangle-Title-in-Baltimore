@@ -48,12 +48,28 @@ def type_badge(node_type: str) -> str:
         "Facilitator": "#4f8f5b",
         "Mixed": "#8a5a35",
     }
-    return f'<span class="type-badge" style="background:{colors.get(node_type, "#294943")};">{node_type}</span>'
+    icons = {"Barrier": "Lock", "Facilitator": "Bridge", "Mixed": "Two-way"}
+    return (
+        f'<span class="type-badge" style="background:{colors.get(node_type, "#294943")};">'
+        f'<span class="badge-icon">{icons.get(node_type, "Node")}</span>{node_type}</span>'
+    )
 
 
 def level_badge(level: str) -> str:
     color = LEVELS.get(level, {}).get("color", "#d7e8bd")
-    return f'<span class="level-badge" style="background:{color};">{level}</span>'
+    icons = {
+        "Central Issue": "Home",
+        "Individual Level Factors": "Person",
+        "Interpersonal Level Factors": "Family",
+        "Community Level Factors": "Neighborhood",
+        "Policy-Level Determinants": "Policy",
+        "Economic-Level Determinants": "Tax",
+        "Societal Determinants": "City",
+    }
+    return (
+        f'<span class="level-badge" style="background:{color};">'
+        f'<span class="badge-icon">{icons.get(level, "Level")}</span>{level}</span>'
+    )
 
 
 def level_background(level: str) -> str:
@@ -273,6 +289,7 @@ def render_structured_power_plot(nodes: list[dict]) -> None:
 
 
 def render_node_card(node: dict, detail: bool = False, key_prefix: str = "node") -> None:
+    first_sentence = node["description"].split(".")[0].strip() + "."
     st.markdown(
         f"""
         <div class="evidence-card" id="node-{node["id"]}">
@@ -281,7 +298,7 @@ def render_node_card(node: dict, detail: bool = False, key_prefix: str = "node")
                 {type_badge(node["type"])}
             </div>
             <h3>{node["label"]}</h3>
-            <p>{node["description"]}</p>
+            <p>{first_sentence}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -289,24 +306,25 @@ def render_node_card(node: dict, detail: bool = False, key_prefix: str = "node")
 
     related_themes = themes_for_node(node["id"])
     if related_themes:
-        st.markdown("**Related Interview Themes**")
-        for theme in related_themes[:5]:
-            if st.button(
-                f"View interview evidence: {theme['title']}",
-                key=f"{key_prefix}-{node['id']}-theme-{theme['id']}",
-                use_container_width=True,
-            ):
-                switch_to_interview(theme["id"])
+        with st.expander("Related interview evidence", expanded=detail):
+            st.markdown(node["description"])
+            for theme in related_themes[:5]:
+                if st.button(
+                    f"View interview evidence: {theme['title']}",
+                    key=f"{key_prefix}-{node['id']}-theme-{theme['id']}",
+                    use_container_width=True,
+                ):
+                    switch_to_interview(theme["id"])
 
     if detail:
         quotes = related_quotes_for_node(node["id"], limit=5)
         if quotes:
-            st.markdown("**Selected supporting quotes**")
-            for theme_title, quote in quotes:
-                st.markdown(
-                    f'<div class="mini-quote">"{quote}"<br><small>{theme_title}</small></div>',
-                    unsafe_allow_html=True,
-                )
+            with st.expander("Selected supporting quotes", expanded=False):
+                for theme_title, quote in quotes:
+                    st.markdown(
+                        f'<div class="mini-quote">"{quote}"<br><small>{theme_title}</small></div>',
+                        unsafe_allow_html=True,
+                    )
 
     if st.button(
         "Show details here",
@@ -347,10 +365,9 @@ selected_node = NODE_BY_ID.get(selected_node_id) if selected_node_id else None
 st.title("Power Map")
 st.markdown(
     """
-    The power map organizes tangled titles as a multilevel ecosystem. Individual
-    knowledge gaps and estate-planning barriers interact with family conflict,
-    service referral pathways, probate courts, tax sale systems, repair program
-    rules, economic constraints, and racialized neighborhood inequality.
+    Tangled titles are not caused by one missing form. They emerge when family
+    inheritance, legal records, repair programs, tax systems, and housing markets
+    fail to recognize the same person as the homeowner.
     """
 )
 
@@ -370,16 +387,31 @@ if selected_node:
         st.rerun()
 
 section_h2("overview", "Overview")
-st.info(
-    "How to read this page: start with Tangled Titles as the central issue, then move down through levels. "
-    "Barriers, facilitators, and mixed nodes are separated into cards so the system is legible and nothing overlaps."
+st.markdown(
+    """
+    <div class="key-takeaway-card">
+        <strong>Which systems create or reduce tangled title risk?</strong>
+        The map shows where individual knowledge gaps, family conflict,
+        community services, legal systems, tax pressure, and structural inequality
+        become connected.
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 st.markdown(
     """
-    This redesign replaces the crowded free-floating graph with a hierarchical
-    card layout. The relationships are still explicit: each node lists related
-    interview themes, and every theme button opens the curated Interview evidence.
+    <div class="pathway-scene">
+        <div class="scene-row">
+            <div class="scene-step"><div class="mini-house"></div><strong>Family death or transfer gap</strong><span>Ownership changes informally.</span></div>
+            <div class="scene-step"><div class="mini-doc"></div><strong>Deed mismatch</strong><span>Records do not reflect lived ownership.</span></div>
+            <div class="scene-step"><div class="mini-lock"></div><strong>Repair or benefit denial</strong><span>Programs require formal title.</span></div>
+            <div class="scene-step"><div class="mini-doc"></div><strong>Tax and legal burden</strong><span>Notices and costs accumulate.</span></div>
+            <div class="scene-step"><div class="mini-wealth"></div><strong>Sale or displacement risk</strong><span>Loss becomes possible.</span></div>
+        </div>
+    </div>
     """
+    ,
+    unsafe_allow_html=True,
 )
 
 section_h2("hierarchical-power-map", "Hierarchical Power Map")
@@ -464,11 +496,10 @@ for tab, level in zip(structural_tabs, STRUCTURAL_SUBLEVELS):
 section_h2("system-touchpoint-map", "System Touchpoint Map")
 st.markdown(
     """
-    This touchpoint map sits inside the Power Map because it shows where the
-    ecosystem becomes visible to residents. It separates household, family,
-    community, service, legal, tax, data, and market actors so the process does
-    not collapse into one crowded diagram.
+    <p class="section-subtitle">Touchpoints show when the ecosystem becomes visible to residents.</p>
     """
+    ,
+    unsafe_allow_html=True,
 )
 touchpoint_levels = {
     "Resident / household": "Individual Level Factors",
@@ -492,7 +523,7 @@ for idx, lane in enumerate(SYSTEM_TOUCHPOINT_LANES):
                 <div class="badge-row">{level_badge(level)}</div>
                 <h3>{idx + 1}. {lane["lane"]}</h3>
                 <p><strong>Actors:</strong> {", ".join(lane["examples"])}</p>
-                <p><strong>Resident encounters:</strong> {", ".join(lane["encounters"])}</p>
+                <p class="muted-note"><strong>Resident encounters:</strong> {", ".join(lane["encounters"])}</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -507,23 +538,22 @@ for column, node_type in zip(cols, ["Barrier", "Facilitator", "Mixed"]):
         st.caption("; ".join(sorted({node["level"] for node in typed_nodes})[:4]))
 
 st.info(
-    "Interview evidence for these domains is summarized in the Interview section's word cloud and selected quote cards. "
-    "This page keeps the system structure visible; the Interview page shows which themes and terms recur most often."
+    "The system contains more documented barriers than facilitators, which suggests that intervention requires coordinated changes across legal, housing, tax, and community systems."
 )
 
 section_h2("intervention-leverage-points", "Intervention Leverage Points")
 st.markdown(
     """
-    The strongest intervention logic is prevention plus proactive outreach.
-    Interviews point to estate planning before death, transfer-on-death deeds,
-    repair-grant-linked title clearing, mediation for family conflict, legal aid
-    clinics, warm handoffs, and data-driven outreach as practical leverage points.
+    <p class="section-subtitle">The strongest intervention logic is prevention plus proactive outreach. Detailed evidence is collapsed below.</p>
     """
+    ,
+    unsafe_allow_html=True,
 )
 
-for leverage_point, theme_ids in INTERVENTION_LEVERAGE_POINTS:
-    with st.expander(leverage_point, expanded=False):
-        for theme_id in theme_ids:
+with st.expander("Explore intervention leverage points", expanded=False):
+    for leverage_point, theme_ids in INTERVENTION_LEVERAGE_POINTS:
+        st.markdown(f"### {leverage_point}")
+        for theme_id in theme_ids[:3]:
             theme = THEME_BY_ID.get(theme_id)
             if not theme:
                 continue

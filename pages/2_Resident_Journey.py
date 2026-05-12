@@ -69,7 +69,15 @@ def render_stage(stage: dict[str, str], idx: int) -> None:
             <div class="journey-stage-card">
                 <p class="rq-badge">Stage {idx}</p>
                 <h3>{escape(stage['title'])}</h3>
+                <p class="story-hook">{escape(stage.get('story_hook', ''))}</p>
                 <p>{escape(stage['narrative'])}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        with st.expander("System details", expanded=False):
+            st.markdown(
+                f"""
                 <div class="journey-stage-meta">
                     <strong>System touchpoint</strong>
                     <span>{escape(stage['touchpoint'])}</span>
@@ -82,10 +90,9 @@ def render_stage(stage: dict[str, str], idx: int) -> None:
                     <strong>Barrier</strong>
                     <span>{escape(stage['barrier'])}</span>
                 </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+                """,
+                unsafe_allow_html=True,
+            )
 
 
 def render_journey_overview_image() -> None:
@@ -151,6 +158,15 @@ with overview_right:
     render_journey_overview_image()
 
 section_h2("tasha-journey", "Tasha's Journey")
+st.markdown(
+    """
+    <div class="key-takeaway-card">
+        <strong>How does a hidden paperwork problem become a housing crisis?</strong>
+        Follow the points where Tasha's lived ownership meets systems that require formal title.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 for idx, stage in enumerate(RESIDENT_JOURNEY_STAGES, start=1):
     with st.container(border=True):
         render_stage(stage, idx)
@@ -166,4 +182,15 @@ st.markdown(
     intentionally kept out of this section and remain in the final intervention
     sections elsewhere in the site.
     """
+)
+st.markdown(
+    """
+    <div class="takeaway">
+    Tasha's story shows how a hidden title mismatch becomes visible through
+    repair systems, tax systems, and market pressure. The next pages show how
+    interview evidence and spatial data connect this story to broader patterns
+    in Baltimore.
+    </div>
+    """,
+    unsafe_allow_html=True,
 )

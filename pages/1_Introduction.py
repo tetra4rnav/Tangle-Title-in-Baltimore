@@ -8,7 +8,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from shared_style import apply_theme, render_page_toc, section_h2, support_badge
-from tangled_titles_content import GLOSSARY_TERMS, PROBLEM_PATHWAY_DETAIL, TITLE_COMPARISON
+from tangled_titles_content import GLOSSARY_TERMS, PROBLEM_PATHWAY_DETAIL
 
 
 st.set_page_config(page_title="Introduction", layout="wide")
@@ -30,36 +30,87 @@ render_page_toc("introduction", INTRODUCTION_TOC)
 
 st.title("Introduction")
 
+essential_terms = {
+    "Tangled title",
+    "Deed",
+    "Clear title",
+    "Probate",
+    "Tax sale",
+    "Home repair grant",
+    "Legal aid",
+}
+
 st.markdown(
     """
-    This platform frames tangled titles as a system-level housing stability issue:
-    a resident may live in and maintain a family home, but still lack the formal
-    documentation required by legal, financial, and government systems.
+    <div class="page-hero">
+        <div class="hero-copy">
+            <span class="rq-badge">What is a tangled title, and why does it matter?</span>
+            <h2>A family can live in a home for decades and still be treated as if they do not legally belong there.</h2>
+            <p>A tangled title happens when the legal ownership record does not match the person who lives in, maintains, or inherits the home.</p>
+            <p class="muted-note">This matters because legal recognition often controls access to repairs, tax credits, notices, loans, and protection from displacement.</p>
+        </div>
+        <div class="hero-visual">
+            <h3>Illustration placeholder: resident, rowhouse, and deed mismatch</h3>
+            <p class="muted-note">A future image can show the human story beside the paperwork record.</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
     """
+    <div class="key-takeaway-card">
+        <strong>Key takeaway</strong>
+        Tangled titles are not just a legal paperwork problem. They are a pathway
+        through which family inheritance, housing repair systems, tax sale risk,
+        and wealth loss can become connected.
+    </div>
+    """
+    ,
+    unsafe_allow_html=True,
 )
 
 section_h2("key-terms", "Key Terms / Keyword Guide")
 st.markdown(
     """
-    These terms appear across the site. The definitions below are intentionally
-    plain-language starting points, not legal advice.
+    <p class="section-subtitle">Start with the essentials. The full glossary stays available below without taking over the first view.</p>
     """
+    ,
+    unsafe_allow_html=True,
 )
-glossary_query = st.text_input("Search key terms", placeholder="probate, deed, tax sale, legal aid...")
-filtered_terms = [
-    item
-    for item in GLOSSARY_TERMS
-    if not glossary_query.strip()
-    or glossary_query.lower() in " ".join(item).lower()
-]
-for idx in range(0, len(filtered_terms), 2):
-    cols = st.columns(2)
-    for col, term_item in zip(cols, filtered_terms[idx : idx + 2]):
-        term, definition, why_it_matters = term_item
-        with col:
-            with st.expander(term, expanded=False):
-                st.markdown(definition)
-                st.caption(f"Why it matters: {why_it_matters}")
+
+essential_items = [item for item in GLOSSARY_TERMS if item[0] in essential_terms]
+st.markdown('<div class="compact-grid">', unsafe_allow_html=True)
+for term, definition, why_it_matters in essential_items:
+    st.markdown(
+        f"""
+        <div class="compact-card">
+            <h3>{term}</h3>
+            <p>{definition}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+st.markdown("</div>", unsafe_allow_html=True)
+
+with st.expander("Open the full glossary", expanded=False):
+    st.caption("Plain-language starting points, not legal advice.")
+    glossary_query = st.text_input("Search key terms", placeholder="probate, deed, tax sale, legal aid...")
+    filtered_terms = [
+        item
+        for item in GLOSSARY_TERMS
+        if not glossary_query.strip()
+        or glossary_query.lower() in " ".join(item).lower()
+    ]
+    for idx in range(0, len(filtered_terms), 2):
+        cols = st.columns(2)
+        for col, term_item in zip(cols, filtered_terms[idx : idx + 2]):
+            term, definition, why_it_matters = term_item
+            with col:
+                with st.expander(term, expanded=False):
+                    st.markdown(definition)
+                    st.caption(f"Why it matters: {why_it_matters}")
 
 section_h2("clear-vs-tangled-title", "Clear Title vs Tangled Title")
 clear_col, tangled_col = st.columns(2)
@@ -69,24 +120,33 @@ with clear_col:
         <div class="evidence-card" style="border-top: 7px solid #4f8f5b;">
             <h3>Clear Title</h3>
             <p class="muted-note">Formal ownership and lived ownership line up.</p>
+            <ul>
+                <li>Name on deed</li>
+                <li>Repair grants and tax credits are easier to access</li>
+                <li>Notices reach the right person</li>
+                <li>Transfer, refinance, or equity access is easier</li>
+            </ul>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    for point in TITLE_COMPARISON["clear"]:
-        st.success(point)
 with tangled_col:
     st.markdown(
         """
         <div class="evidence-card" style="border-top: 7px solid #c96b68;">
             <h3>Tangled Title</h3>
             <p class="muted-note">The resident's lived relationship to the home is not fully recognized by legal records.</p>
+            <ul>
+                <li>Resident's name may not be on deed</li>
+                <li>Repair grants or tax credits may be blocked</li>
+                <li>Notices may go to deceased or absent titled owners</li>
+                <li>Family conflict or unresolved inheritance may remain</li>
+                <li>Higher risk of tax sale, foreclosure, vacancy, or displacement</li>
+            </ul>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    for point in TITLE_COMPARISON["tangled"]:
-        st.warning(point)
 
 section_h2("resident-pathway", "Resident Pathway")
 st.markdown(
@@ -136,21 +196,25 @@ with col1:
     section_h2("synthesis-question", "Synthesis Question")
     st.markdown(
         """
-        How do individual knowledge gaps, family inheritance processes, service
-        access, administrative systems, and neighborhood-level inequities interact
-        to shape tangled title risk in Baltimore?
+        How do family inheritance processes, service access, administrative
+        systems, and neighborhood-level inequities interact to shape tangled
+        title risk in Baltimore?
         """
     )
 
     section_h2("evidence-streams", "Evidence Streams")
     st.markdown(
         """
-        - **Resident journey:** a fictional composite pathway showing how title problems become visible.
-        - **Quant analysis:** tract-level patterns in title risk and wealth context.
-        - **Interviews:** lived experience, service navigation, institutional trust.
-        - **Power mapping:** actors, barriers, facilitators, and intervention points.
-        - **Policy/context review:** rules and administrative systems shaping access.
+        <div class="compact-grid">
+            <div class="compact-card"><h3>Resident journey</h3><p>A fictional composite pathway showing how title problems become visible.</p></div>
+            <div class="compact-card"><h3>Quant map</h3><p>Tract-level patterns in title risk and wealth context.</p></div>
+            <div class="compact-card"><h3>Interviews</h3><p>Stakeholder themes about crisis, navigation, and institutional trust.</p></div>
+            <div class="compact-card"><h3>Power map</h3><p>Actors, barriers, facilitators, and intervention points.</p></div>
+            <div class="compact-card"><h3>Policy and context</h3><p>Rules and administrative systems shaping access.</p></div>
+        </div>
         """
+        ,
+        unsafe_allow_html=True,
     )
 
 with col2:

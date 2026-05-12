@@ -11,7 +11,6 @@ if str(ROOT_DIR) not in sys.path:
 
 from shared_style import apply_theme, render_page_toc, section_h2
 from tangled_titles_content import (
-    INTERVENTION_LEVERAGE_POINTS,
     INTERVIEW_THEMES,
     NODE_BY_ID,
     QUOTE_WALL_ITEMS,
@@ -26,9 +25,9 @@ apply_theme()
 
 INTERVIEW_TOC = (
     ("overview", "Overview"),
-    ("interview-word-cloud", "Interview Word Cloud"),
+    ("three-messages", "Three Messages"),
+    ("interview-word-cloud", "Recurring Words"),
     ("theme-explorer", "Theme Explorer"),
-    ("intervention-implications", "Intervention Implications"),
 )
 render_page_toc("interview", INTERVIEW_TOC)
 
@@ -58,14 +57,14 @@ def render_theme_card(theme: dict, compact: bool = False) -> None:
     for quote in theme["key_quotes"][:quote_count]:
         st.markdown(f'<div class="mini-quote">"{quote}"</div>', unsafe_allow_html=True)
 
-    st.markdown("**Related Power Map Nodes**")
-    for node in related_nodes:
-        if st.button(
-            f"View node: {node['label']}",
-            key=f"theme-{theme['id']}-node-{node['id']}",
-            use_container_width=True,
-        ):
-            switch_to_power_map(node["id"])
+    with st.expander("Related Power Map nodes", expanded=False):
+        for node in related_nodes:
+            if st.button(
+                f"View node: {node['label']}",
+                key=f"theme-{theme['id']}-node-{node['id']}",
+                use_container_width=True,
+            ):
+                switch_to_power_map(node["id"])
 
     st.caption(theme["implications"])
 
@@ -201,33 +200,65 @@ if selected_theme:
         st.rerun()
 
 section_h2("overview", "Overview")
-st.info(
-    "The interview evidence shows that tangled titles are not only a paperwork problem. "
-    "They emerge from the interaction of individual knowledge gaps, family relationships, "
-    "community service pathways, legal institutions, economic constraints, and racialized housing inequality."
-)
 st.markdown(
     """
-    The interview themes emphasize that residents often do not discover a tangled
-    title as an abstract legal issue. They discover it when something urgent
-    happens: a roof needs repair, property taxes are overdue, a foreclosure notice
-    arrives, a family member dies, or a program says the resident is not legally
-    recognized as the homeowner.
+    <div class="key-takeaway-card">
+        <strong>What did stakeholders repeatedly say?</strong>
+        Tangled titles are not only a paperwork problem. They emerge when family
+        relationships, service pathways, legal institutions, economic constraints,
+        and racialized housing inequality collide.
+    </div>
     """
+    ,
+    unsafe_allow_html=True,
 )
 
-section_h2("interview-word-cloud", "Interview Word Cloud")
+section_h2("three-messages", "Three messages from the interviews")
+message_cards = [
+    (
+        "Tangled titles often stay invisible until crisis.",
+        "Residents often discover title problems when they seek repairs, receive tax sale notices, face foreclosure, or apply for support.",
+        "Most people are seeing a symptom usually.",
+    ),
+    (
+        "Ownership mismatch turns family history into administrative burden.",
+        "Living in the home, paying bills, or being family does not automatically make someone legally recognized as the owner.",
+        "They assume because they were the adult child living in the property that they automatically inherited it, which is not true.",
+    ),
+    (
+        "Navigation requires trusted outreach and warm handoffs.",
+        "Interviewees emphasized that residents need more than a phone number. They need trusted, proactive connection to legal and housing support.",
+        "Instead of waiting for people to come to you, go to them.",
+    ),
+]
+cols = st.columns(3)
+for col, (title, explanation, quote) in zip(cols, message_cards):
+    with col:
+        st.markdown(
+            f"""
+            <div class="evidence-card" style="min-height:285px;">
+                <span class="rq-badge">Interview message</span>
+                <h3>{title}</h3>
+                <p>{explanation}</p>
+                <div class="mini-quote">"{quote}"</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+section_h2("interview-word-cloud", "Recurring Words")
 st.markdown(
     """
-    This view combines the former quote wall with a word-cloud style summary of
-    the interview evidence. Larger terms appear more often across curated themes
-    and selected quotes; the cards below keep representative quotes close to the
-    themes they support.
+    <p class="section-subtitle">Use this as a quick orientation to repeated themes, not as a transcript count.</p>
     """
+    ,
+    unsafe_allow_html=True,
 )
-render_interview_word_cloud(INTERVIEW_THEMES)
 
-with st.expander("Selected quotes behind the word cloud", expanded=True):
+with st.expander("Explore recurring words from interviews", expanded=False):
+    render_interview_word_cloud(INTERVIEW_THEMES)
+
+with st.expander("Selected quotes behind the recurring words", expanded=False):
     quote_wall_query = st.text_input("Search selected quotes", key="quote-wall-search")
     quote_items = [
         item for item in QUOTE_WALL_ITEMS if not quote_wall_query.strip() or quote_wall_query.lower() in " ".join(item).lower()
@@ -262,63 +293,46 @@ with st.expander("Selected quotes behind the word cloud", expanded=True):
                     switch_to_power_map(node_id)
 
 section_h2("theme-explorer", "Theme Explorer")
-level_options = ["All levels"] + list(THEME_LEVEL_ORDER)
-search_term = st.text_input(
-    "Search themes, quotes, or related nodes",
-    value="",
-    placeholder="probate, repair, tax sale, family conflict, Black Butterfly...",
-)
-selected_level = st.selectbox("Filter by interview level", level_options)
-
-filtered_themes = INTERVIEW_THEMES
-if selected_level != "All levels":
-    filtered_themes = [theme for theme in filtered_themes if theme["level"] == selected_level]
-if search_term.strip():
-    query = search_term.lower()
-    filtered_themes = [
-        theme
-        for theme in filtered_themes
-        if query in theme["title"].lower()
-        or query in theme["short_summary"].lower()
-        or query in " ".join(theme["key_quotes"]).lower()
-        or query in " ".join(theme["related_power_nodes"]).lower()
-    ]
-
-for level in THEME_LEVEL_ORDER:
-    themes_for_level = [theme for theme in filtered_themes if theme["level"] == level]
-    if not themes_for_level:
-        continue
-    st.markdown(f"### {level}")
-    columns = st.columns(2)
-    for idx, theme in enumerate(themes_for_level):
-        with columns[idx % 2]:
-            with st.container(border=True):
-                render_theme_card(theme)
-
-section_h2("intervention-implications", "Intervention Implications")
 st.markdown(
     """
-    The strongest intervention logic is prevention plus proactive outreach.
-    Interviews point to estate planning before death, transfer-on-death deeds,
-    repair-grant-linked title clearing, mediation for family conflict, legal aid
-    clinics, warm handoffs, and data-driven outreach as practical leverage points.
-    """
+    <p class="section-subtitle">The full evidence set remains available, but it is collapsed by default so the page reads as a synthesis first.</p>
+    """,
+    unsafe_allow_html=True,
 )
+with st.expander("Explore all interview themes and quotes", expanded=False):
+    level_options = ["All levels"] + list(THEME_LEVEL_ORDER)
+    search_term = st.text_input(
+        "Search themes, quotes, or related nodes",
+        value="",
+        placeholder="probate, repair, tax sale, family conflict, Black Butterfly...",
+    )
+    selected_level = st.selectbox("Filter by interview level", level_options)
 
-for leverage_point, theme_ids in INTERVENTION_LEVERAGE_POINTS:
-    with st.expander(leverage_point, expanded=False):
-        for theme_id in theme_ids:
-            theme = THEME_BY_ID.get(theme_id)
-            if not theme:
-                continue
-            st.markdown(f"**{theme['title']}**")
-            st.caption(theme["implications"])
-            related_labels = [
-                NODE_BY_ID[node_id]["label"]
-                for node_id in theme["related_power_nodes"]
-                if node_id in NODE_BY_ID
-            ]
-            st.markdown(
-                "Related power nodes: "
-                + ", ".join(related_labels)
-            )
+    filtered_themes = INTERVIEW_THEMES
+    if selected_level != "All levels":
+        filtered_themes = [theme for theme in filtered_themes if theme["level"] == selected_level]
+    if search_term.strip():
+        query = search_term.lower()
+        filtered_themes = [
+            theme
+            for theme in filtered_themes
+            if query in theme["title"].lower()
+            or query in theme["short_summary"].lower()
+            or query in " ".join(theme["key_quotes"]).lower()
+            or query in " ".join(theme["related_power_nodes"]).lower()
+        ]
+
+    for level in THEME_LEVEL_ORDER:
+        themes_for_level = [theme for theme in filtered_themes if theme["level"] == level]
+        if not themes_for_level:
+            continue
+        st.markdown(f"### {level}")
+        columns = st.columns(2)
+        for idx, theme in enumerate(themes_for_level):
+            with columns[idx % 2]:
+                with st.container(border=True):
+                    render_theme_card(theme, compact=True)
+
+st.info(
+    "Action recommendations are consolidated on the Power Map page so this page can focus on interview evidence."
+)

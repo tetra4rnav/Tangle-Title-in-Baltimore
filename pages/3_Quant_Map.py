@@ -1046,6 +1046,16 @@ with st.sidebar:
 st.title("Quantitative Evidence")
 st.markdown(
     """
+    <div style="border-left: 6px solid #efc267; background: rgba(255,247,220,0.86); border-radius: 8px; padding: 0.9rem 1rem; margin: 0.55rem 0 1.1rem;">
+        <strong>Where is tangled title risk concentrated in Baltimore?</strong><br>
+        Use this map descriptively. It shows spatial patterns and overlap, not causal proof.
+        Darker areas indicate higher measured burden or risk depending on the selected metric.
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+st.markdown(
+    """
     <style>
         section[data-testid="stMain"] {
             font-size: 1.08rem;
