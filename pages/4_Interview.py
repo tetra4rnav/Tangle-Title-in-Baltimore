@@ -30,7 +30,7 @@ INTERVIEW_TOC = (
     ("overview", "Overview"),
     ("interviewee-perspectives", "Interviewee Perspectives"),
     ("three-messages", "Three Messages"),
-    ("interview-word-cloud", "Recurring Words"),
+    ("interview-word-cloud", "Repeated Interview Language"),
     ("theme-explorer", "Theme Explorer"),
 )
 render_page_toc("interview", INTERVIEW_TOC)
@@ -76,22 +76,30 @@ def render_theme_card(theme: dict, compact: bool = False) -> None:
 def interview_word_frequencies(themes: list[dict]) -> list[tuple[str, int]]:
     stopwords = {
         "and", "the", "that", "with", "they", "this", "from", "when", "have", "into",
-        "title", "titles", "tangled", "residents", "property", "home", "homes", "legal",
+        "title", "titles", "tangled", "residents", "property", "home", "homes", "house", "baltimore", "legal",
         "because", "their", "can", "not", "are", "for", "after", "through", "about",
         "often", "may", "issue", "issues", "people", "resident", "ownership",
+        "just", "many", "most", "then", "even", "what", "your", "know", "like",
+        "don't", "cant", "can't", "it's", "them", "able",
     }
     aliases = {
         "probate": "probate",
-        "repair": "home repair",
-        "repairs": "home repair",
-        "family": "family conflict",
+        "repair": "repairs",
+        "repairs": "repairs",
+        "home repair": "repairs",
+        "repair grant": "repair grants",
+        "family": "family",
         "siblings": "family conflict",
-        "tax": "tax sale",
+        "tax": "taxes",
+        "taxes": "taxes",
+        "property tax": "taxes",
         "sale": "tax sale",
+        "tax sale": "tax sale",
         "estate": "estate planning",
         "planning": "estate planning",
         "deed": "deed transfer",
         "deeds": "deed transfer",
+        "deed transfer": "deed transfer",
         "equity": "home equity",
         "wealth": "wealth loss",
         "black": "Black Butterfly",
@@ -105,40 +113,58 @@ def interview_word_frequencies(themes: list[dict]) -> list[tuple[str, int]]:
         "seniors": "fixed-income seniors",
         "fixed": "fixed-income seniors",
         "foreclosure": "foreclosure",
-        "heirs": "heirs",
-        "heir": "heirs",
+        "heirs": "heirs' property",
+        "heir": "heirs' property",
+        "heirs property": "heirs' property",
+        "will": "wills",
+        "wills": "wills",
+        "legal aid": "legal help",
+        "services": "legal help",
+        "mediation": "legal help",
     }
+    removed_terms = stopwords | {"services"}
+
+    def normalize_term(term: str) -> str | None:
+        cleaned = term.lower().strip().replace("’", "'")
+        cleaned = cleaned.strip("!?;:()[]\"'")
+        if not cleaned or cleaned in removed_terms:
+            return None
+        normalized = aliases.get(cleaned, cleaned)
+        if normalized.lower() in removed_terms:
+            return None
+        return normalized
+
     counts: dict[str, int] = {}
     for theme in themes:
         text = " ".join([theme["title"], theme["short_summary"], " ".join(theme["key_quotes"])]).lower()
         for raw in text.replace("/", " ").replace("-", " ").replace(",", " ").replace(".", " ").split():
-            word = raw.strip("!?;:()[]\"'")
-            if len(word) < 4 or word in stopwords:
+            term = normalize_term(raw)
+            if not term or len(term) < 4:
                 continue
-            term = aliases.get(word, word)
             counts[term] = counts.get(term, 0) + 1
     for theme_label, quote, _theme_id, _node_id in QUOTE_WALL_ITEMS:
-        for term in theme_label.split():
-            if len(term) > 3:
-                counts[theme_label] = counts.get(theme_label, 0) + 2
-                break
+        label_term = normalize_term(theme_label)
+        if label_term:
+            counts[label_term] = counts.get(label_term, 0) + 2
         for word in quote.lower().replace(",", " ").replace(".", " ").split():
-            term = aliases.get(word.strip("!?;:()[]\"'"), "")
+            term = normalize_term(word)
             if term:
                 counts[term] = counts.get(term, 0) + 1
     for term, count in TRANSCRIPT_RECURRING_TERMS:
-        counts[term] = max(counts.get(term, 0), count)
-    return sorted(counts.items(), key=lambda item: item[1], reverse=True)[:60]
+        normalized = normalize_term(term)
+        if normalized:
+            counts[normalized] = counts.get(normalized, 0) + count
+    return sorted(counts.items(), key=lambda item: item[1], reverse=True)[:42]
 
 
 def render_interview_word_cloud(themes: list[dict]) -> None:
     terms = interview_word_frequencies(themes)
     max_count = max(count for _term, count in terms)
-    colors = ["#294943", "#8f3d46", "#6fa8c8", "#c88f2e", "#4f8f5b", "#18312d", "#8a5a35", "#c96b68"]
+    colors = ["#294943", "#6b5637", "#b88a2d", "#5e8fa8", "#3f6f5c", "#8a6a3f"]
     spans = []
     for idx, (term, count) in enumerate(terms):
-        size = 0.86 + 1.75 * (count / max_count)
-        weight = 650 if count >= 10 else 560
+        size = 0.82 + 1.18 * (count / max_count)
+        weight = 650 if count >= 12 else 560
         color = colors[idx % len(colors)]
         spans.append(
             f'<span title="{escape(str(count))} transcript mentions" '
@@ -151,17 +177,17 @@ def render_interview_word_cloud(themes: list[dict]) -> None:
             background:#fffaf0;
             border:1px solid rgba(24,49,45,0.16);
             border-radius:12px;
-            padding:1.2rem 1.35rem;
-            line-height:1.25;
+            padding:1.35rem 1.45rem;
+            line-height:1.35;
             display:flex;
             flex-wrap:wrap;
-            gap:0.42rem 0.78rem;
+            gap:0.56rem 0.92rem;
             align-items:baseline;
         ">
             {"".join(spans)}
         </div>
         <p class="muted-note" style="margin-top:0.65rem;">
-            Terms combine curated interview themes with recurring keywords counted from the supplied transcripts.
+            Terms were cleaned and grouped to emphasize analytically meaningful interview language rather than raw transcript frequency.
         </p>
         """,
         unsafe_allow_html=True,
@@ -286,10 +312,10 @@ for col, (title, explanation, quote) in zip(cols, message_cards):
             unsafe_allow_html=True,
         )
 
-section_h2("interview-word-cloud", "Recurring Words")
+section_h2("interview-word-cloud", "What Came Up Repeatedly in Interviews")
 st.markdown(
     """
-    <p class="section-subtitle">Use this as a quick orientation to repeated themes, not as a transcript count.</p>
+    <p class="section-subtitle">This word cloud offers a quick orientation to recurring interview language. It is not a substitute for the themes, quotes, and resident narratives below.</p>
     """
     ,
     unsafe_allow_html=True,
