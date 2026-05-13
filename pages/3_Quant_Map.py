@@ -1243,6 +1243,9 @@ st.divider()
 # Current situation: Baltimore headline metrics + interactive tract map
 # -----------------------------------------------------------------------------
 st.markdown("### Current Situation in Baltimore")
+st.caption(
+    "Data years: Tangled-title and at-risk property indicators are based on 2026 BWDC/PropertyRadar-derived data."
+)
 
 st.markdown(
     f"""
@@ -1307,16 +1310,13 @@ with citywide_col:
 with tract_map_col:
     render_interactive_map(tracts, geojson)
 
-st.caption(
-    "Data years: Tangled-title and at-risk property indicators are based on 2026 BWDC/PropertyRadar-derived data."
-)
-
 st.divider()
 
 # =============================================================================
 # H2: Who's carrying the burden?
 # =============================================================================
 _quant_section_h2("who-is-carrying-the-burden", "Who's carrying the burden?")
+st.caption("Data years: Black population and median property value indicators are based on 2024 data.")
 
 st.markdown(
     """
@@ -1355,8 +1355,6 @@ with right_map:
         selectbox_label="Property value metric",
         selectbox_key="pv_metric_right",
     )
-
-st.caption("Data years: Black population and median property value indicators are based on 2024 data.")
 
 st.markdown("### Notice the pattern")
 st.markdown(

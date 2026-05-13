@@ -386,8 +386,8 @@ INTERVIEW_THEMES = [
         "level": "Central Issue",
         "short_summary": "Tangled titles prevent residents from using home equity, accessing repair funds, defending ownership, or leveraging intergenerational assets.",
         "key_quotes": [
-            "Descendants can't use the property... can't access the equity because of some sort of title issue.",
-            "They have for decades have not been able to get a home repair, take out a mortgage... they can't access that equity and that money.",
+            "Descendants can't use the property, or whoever's living at that property can't use the property, can't access the equity because of some sort of title issue.",
+            "They have for decades have not been able to get a home repair, take out a mortgage on that property to fix something, take out a mortgage to send their kid to school; they can't access that equity and that money.",
         ],
         "related_power_nodes": ["tangled_titles", "high_cost_title_clearing", "owner_occupied_protection_gap", "housing_affordability_tradeoff"],
         "implications": "Frame tangled titles as a housing stability and wealth preservation issue, not only a paperwork issue.",
@@ -400,7 +400,7 @@ INTERVIEW_THEMES = [
         "key_quotes": [
             "Most people are seeing a symptom usually.",
             "They really find out that there's a big problem usually when they're trying to go access home equity.",
-            "Most of our tangled title clients... come to us for something else.",
+            "Most of our tangled title clients, most of them, not all of them, come to us for something else.",
         ],
         "related_power_nodes": ["housing_service_organizations", "tax_sale_system", "legal_service_organizations", "referral_network"],
         "implications": "Home repair programs, tax sale prevention, and housing counseling should screen for title issues.",
@@ -426,7 +426,7 @@ INTERVIEW_THEMES = [
         "key_quotes": [
             "They assume because they were the adult child living in the property that they automatically inherited it, which is not true.",
             "They know that their mom is on the deed. But they assume that they are the owner and it's fine.",
-            "My mom told me it's gonna be mine... then now they can't because the deed is actually not in their name.",
+            "I inherited this house because my mom told me it's gonna be mine, and then when they go to pay the bill and reach out for assistance, they can't because the deed is actually not in their name.",
         ],
         "related_power_nodes": ["myth_automatic_transfer", "maryland_intestacy_law", "not_engaged_estate_planning", "legal_paperwork_to_titled_owner"],
         "implications": "Public education should directly address the myth of automatic inheritance.",
@@ -451,7 +451,7 @@ INTERVIEW_THEMES = [
         "short_summary": "Probate, title clearing, heir outreach, legal consultation, and document preparation can be expensive and intimidating.",
         "key_quotes": [
             "It can be expensive to access estate administration services, probate, to get on the deed.",
-            "That level of outreach... does increase your legal costs, does increase your research costs.",
+            "That level of outreach that is mandated by the court and the law does increase your legal costs, does increase your research costs.",
         ],
         "related_power_nodes": ["costly_process", "high_cost_title_clearing", "probate_process", "fixed_income_seniors"],
         "implications": "Free or low-cost legal services and simplified transfer tools are critical.",
@@ -462,9 +462,9 @@ INTERVIEW_THEMES = [
         "level": "Structural",
         "short_summary": "Even when residents learn what to do, probate and title clearing can require time, paperwork, transportation, technology, and emotional capacity.",
         "key_quotes": [
-            "Going through an administrative process is... one more giant thing to have to deal with.",
+            "Going through an administrative process is one more giant thing to have to deal with.",
             "Transportation is a big issue.",
-            "Document collection... deed... electricity bills or water bills... mortgage papers... SSN and ID cards.",
+            "For home repair you need to have your deed, electricity bills or water bills, mortgage papers, and SSN and ID cards to be able to qualify for programs.",
         ],
         "related_power_nodes": ["digital_and_document_burden", "register_of_wills", "probate_process", "digital_divide"],
         "implications": "Services should include navigation, document support, and in-person assistance.",
@@ -500,7 +500,7 @@ INTERVIEW_THEMES = [
         "level": "Community",
         "short_summary": "Residents often learn about title problems when they apply for repair funding and are told they need clear title or consent from all deed holders.",
         "key_quotes": [
-            "One of the conditions of receiving home repair funding... is that you have to have a clear title.",
+            "One of the conditions of receiving home repair funding in the city, in particular, is that you have to have a clear title.",
             "It's impossible for them, for legal reasons, to actually move on making those repairs.",
             "It can be a dead-on-arrival situation.",
         ],
@@ -513,8 +513,8 @@ INTERVIEW_THEMES = [
         "level": "Economic",
         "short_summary": "When people cannot access repairs, homes deteriorate, creating health, safety, and vacancy risks.",
         "key_quotes": [
-            "They're living with a leaky roof or... without heat over the whole winter.",
-            "These homes could either be condemned, or... decayed to a point that these people can no longer live in them.",
+            "You can get your leaky roof fixed. You can get maybe some accessibility upgrades.",
+            "These homes could either be condemned, or honestly, just decayed to a point that these people can no longer live in them.",
         ],
         "related_power_nodes": ["rising_repair_costs", "housing_service_organizations", "housing_affordability_tradeoff", "tax_sale_system"],
         "implications": "Tangled titles should be treated as part of housing quality, public health, and vacancy prevention.",
@@ -538,7 +538,7 @@ INTERVIEW_THEMES = [
         "level": "Structural",
         "short_summary": "Residents may not receive the right notices, may lack legal standing, or may lose owner-occupied protections when property taxes or bills become overdue.",
         "key_quotes": [
-            "Tax sale... collect overdue property taxes... it can actually lead to a foreclosure on the home.",
+            "Tax sale is where they collect overdue property taxes, and that collection of overdue property taxes can actually lead to a foreclosure on the home.",
             "All of the legal paperwork is addressed to the homeowner.",
             "They also usually aren't getting the benefits of being a homeowner and an owner occupied property.",
         ],
@@ -551,7 +551,7 @@ INTERVIEW_THEMES = [
         "level": "Structural",
         "short_summary": "Residents may be unable to obtain home repair assistance, property tax credits, water bill discounts, or other support because their name is not on the deed.",
         "key_quotes": [
-            "They can't get property tax credits... financial assistance... home repairs assistance.",
+            "They can't get property tax credits, other financial assistance that would help keep the property taxes affordable, or home repairs assistance to help maintain the property properly.",
             "Because their name is not on the deed, they're not eligible.",
         ],
         "related_power_nodes": ["owner_occupied_protection_gap", "housing_service_organizations", "stop_oppressive_seizures_fund", "legal_service_organizations"],
@@ -563,8 +563,8 @@ INTERVIEW_THEMES = [
         "level": "Community",
         "short_summary": "Legal providers often identify title issues when clients seek help for taxes, estate planning, foreclosure, repairs, or other housing problems.",
         "key_quotes": [
-            "We offer estate planning, mortgage foreclosure, tax sale prevention... a net that catches all.",
-            "We research every client... identify that, and we talk to them about it.",
+            "We offer estate planning, mortgage foreclosure, tax sale prevention. We try to cast that net so wide that it increases the opportunity to catch tangled titles.",
+            "We research every client, and then we're like, hey, you have a tangled title, do you want us to help you fix that?",
         ],
         "related_power_nodes": ["legal_service_organizations", "mvls", "pro_bono_resource_center", "referral_network"],
         "implications": "Any organization working with homeowners should ask whether the resident is on title.",
@@ -576,7 +576,7 @@ INTERVIEW_THEMES = [
         "short_summary": "Trusted outreach through neighborhood associations, block captains, clinics, community fairs, and door knocking can reach residents before crisis.",
         "key_quotes": [
             "Instead of waiting for people to come to you, go to them.",
-            "We're constantly... going to neighborhood association meetings.",
+            "We're constantly going to neighborhood association meetings, connecting with new partners, and going to neighborhood association meetings.",
             "This year we focused more on us organizing door knocking.",
         ],
         "related_power_nodes": ["neighborhood_associations", "block_captains", "community_legal_clinics", "baltimore_neighborhood_indicators_alliance"],
@@ -588,8 +588,8 @@ INTERVIEW_THEMES = [
         "level": "Community",
         "short_summary": "Giving someone a phone number may not be enough. Residents need case navigation and follow-through between housing programs and legal services.",
         "key_quotes": [
-            "You're just giving them a number... versus... make a connection for you with this particular person.",
-            "There's no tracking... if they're coming back into the pipeline of the home repair services.",
+            "You're just giving them a number and saying contact them, versus saying I'm going to make a connection for you with this particular person in this particular organization so that your case can move forward.",
+            "There's no tracking of whether, if you've referred people out to legal providers, they're coming back into the pipeline of the home repair services.",
         ],
         "related_power_nodes": ["referral_network", "housing_service_organizations", "legal_service_organizations", "stop_oppressive_seizures_fund"],
         "implications": "Build warm handoff workflows and track whether legal referrals resolve the barrier.",
@@ -600,9 +600,9 @@ INTERVIEW_THEMES = [
         "level": "Structural",
         "short_summary": "Administrative records, property records, death records, repair requests, social service records, and neighborhood data could support proactive outreach.",
         "key_quotes": [
-            "A comparison of current property records with public death records... we found like 3000.",
+            "It was just a comparison of current property records with public death records; how many of the death records are still on a property. We found like 3000.",
             "If you overlay all those things together, maybe that is the population we should go out to.",
-            "To have more rigorous analysis... would be really helpful.",
+            "More rigorous analysis would be really helpful.",
         ],
         "related_power_nodes": ["baltimore_neighborhood_indicators_alliance", "neighborhood_associations", "block_captains", "racialized_housing_inequality"],
         "implications": "Use data to prioritize outreach while protecting privacy and avoiding punitive targeting.",
@@ -613,7 +613,7 @@ INTERVIEW_THEMES = [
         "level": "Societal",
         "short_summary": "Interviewees connect tangled titles with lower-income homeowners, Black neighborhoods, seniors, long-time owners, and the Black Butterfly geography of Baltimore.",
         "key_quotes": [
-            "Lower-income communities and... predominantly minority communities are affected at higher rates.",
+            "Lower-income communities and communities that are predominantly minority communities are affected at higher rates than other communities.",
             "Most of the times it is the Black Butterfly region.",
             "Our population is about 90% Black and mostly seniors.",
         ],
@@ -627,7 +627,7 @@ INTERVIEW_THEMES = [
         "short_summary": "Seniors may have long-term homeownership and deep neighborhood roots, but limited income for legal help, taxes, or repairs.",
         "key_quotes": [
             "People often seeking assistance are elderly people on fixed incomes.",
-            "The cost of repair work, contractors, and even materials... has gone up... while their income has stayed pretty steady.",
+            "The cost of repair work, contractors, and even materials like wood has gone up over the last few years, while their income has stayed pretty steady.",
         ],
         "related_power_nodes": ["fixed_income_seniors", "rising_repair_costs", "high_cost_title_clearing", "digital_divide"],
         "implications": "Older homeowners need low-barrier, in-person, affordable title and repair support.",
@@ -640,7 +640,7 @@ INTERVIEW_THEMES = [
         "key_quotes": [
             "Do this work while they are still alive.",
             "It gets much stickier when people are deceased.",
-            "If people had their wills... or life estate deeds, this would not be an issue.",
+            "If people had their wills and they had life estate deeds, this would not be an issue.",
         ],
         "related_power_nodes": ["engagement_estate_planning", "transfer_on_death_deed", "repair_grant_estate_planning_link", "community_legal_clinics"],
         "implications": "Pair prevention with home repair, tax credit, senior service, and community outreach programs.",
@@ -651,7 +651,7 @@ INTERVIEW_THEMES = [
         "level": "Policy",
         "short_summary": "Simplified deed tools may reduce dependence on expensive attorneys and probate after death.",
         "key_quotes": [
-            "The law that just passed makes it so much easier... you don't need an attorney for it.",
+            "The law that just passed makes it so much easier. Now it's just a document that you can fill out, and you don't need an attorney for it.",
             "Now it's just a document.",
         ],
         "related_power_nodes": ["transfer_on_death_deed", "engagement_estate_planning", "high_cost_title_clearing", "not_engaged_estate_planning"],
@@ -681,6 +681,44 @@ INTERVENTION_LEVERAGE_POINTS = [
     ("Data-driven outreach", ["data_driven_outreach", "community_outreach", "black_butterfly_geography"]),
     ("Tax sale prevention", ["tax_sale_vulnerability", "shelter_security"]),
     ("Digital and document assistance", ["administrative_burden", "fixed_income_seniors"]),
+]
+
+QUALITATIVE_SLIDE_RESOURCE_LINKS = [
+    {
+        "label": "Baltimore City free legacy planning program",
+        "focus": "Asset protection and intergenerational wealth planning",
+        "url": "https://www.baltimorecity.gov/moed/news/baltimore-city-launches-free-legacy-planning-program-to-help-increase-asset-protection-and-intergenerational-wealth",
+    },
+    {
+        "label": "Pro Bono Resource Center HPP estate planning clinic",
+        "focus": "Estate planning and document preparation",
+        "url": "https://probonomd.org/eb_item/hpp-estate-planning-clinic-baltimore-city/",
+    },
+    {
+        "label": "Pratt Library estate planning pro bono clinic",
+        "focus": "Public library-based legal document preparation",
+        "url": "https://calendar.prattlibrary.org/event/estate-planning-pro-bono-document-preparation-clinic",
+    },
+    {
+        "label": "MVLS estate planning clinics and seminars",
+        "focus": "Legal aid and preventive planning",
+        "url": "https://mvlslaw.org/upcoming-estate-planning-clinics-seminars-maryland/",
+    },
+    {
+        "label": "Baltimore City Financial Empowerment Center",
+        "focus": "Financial counseling and navigation support",
+        "url": "https://www.baltimorecity.gov/moed/financial-empowerment-center",
+    },
+    {
+        "label": "Baltimore City tax sale prevention resources",
+        "focus": "Tax sale prevention and homeowner stabilization",
+        "url": "https://www.baltimorecity.gov/dhcd/resources-for-homeowners/tax-sale-prevention",
+    },
+    {
+        "label": "West Baltimore estate planning outreach",
+        "focus": "Place-based estate planning outreach",
+        "url": "https://www.hubwestbaltimore.org/estate-planning-outreach",
+    },
 ]
 
 GLOSSARY_TERMS = [
@@ -753,21 +791,68 @@ PROBLEM_PATHWAY_DETAIL = [
 
 QUOTE_WALL_ITEMS = [
     ("Invisible until crisis", "Most people are seeing a symptom usually.", "crisis_visibility", "housing_service_organizations"),
-    ("Invisible until crisis", "Most of our tangled title clients... come to us for something else.", "crisis_visibility", "referral_network"),
+    ("Invisible until crisis", "Most of our tangled title clients, most of them, not all of them, come to us for something else.", "crisis_visibility", "referral_network"),
     ("Ownership mismatch", "They assume because they were the adult child living in the property that they automatically inherited it, which is not true.", "inheritance_myth", "myth_automatic_transfer"),
     ("Ownership mismatch", "They know that their mom is on the deed. But they assume that they are the owner and it's fine.", "inheritance_myth", "legal_paperwork_to_titled_owner"),
-    ("Home repair barriers", "One of the conditions of receiving home repair funding... is that you have to have a clear title.", "home_repair_gateway", "housing_service_organizations"),
+    ("Home repair barriers", "One of the conditions of receiving home repair funding in the city, in particular, is that you have to have a clear title.", "home_repair_gateway", "housing_service_organizations"),
     ("Home repair barriers", "It can be a dead-on-arrival situation.", "home_repair_gateway", "owner_occupied_protection_gap"),
     ("Family conflict", "It can really fragment a family.", "family_conflict", "family_disagreement"),
     ("Family conflict", "If they can't come to consensus, then in many ways the property may sit in limbo.", "joint_decision_burden", "no_clear_heir"),
     ("Shelter and wealth", "One of the most important things that people are actually getting from these homes is shelter.", "shelter_security", "housing_affordability_tradeoff"),
-    ("Shelter and wealth", "Descendants can't use the property... can't access the equity because of some sort of title issue.", "title_blocks_equity", "tangled_titles"),
-    ("Legal and administrative burden", "Going through an administrative process is... one more giant thing to have to deal with.", "administrative_burden", "probate_process"),
+    ("Shelter and wealth", "Descendants can't use the property, or whoever's living at that property can't use the property, can't access the equity because of some sort of title issue.", "title_blocks_equity", "tangled_titles"),
+    ("Legal and administrative burden", "Going through an administrative process is one more giant thing to have to deal with.", "administrative_burden", "probate_process"),
     ("Legal and administrative burden", "People don't even know they need to go to the Register of Wills.", "knowledge_gap", "register_of_wills"),
     ("Structural inequality", "Most of the times it is the Black Butterfly region.", "black_butterfly_geography", "racialized_housing_inequality"),
-    ("Structural inequality", "Lower-income communities and... predominantly minority communities are affected at higher rates.", "black_butterfly_geography", "annual_tax_lien_sales"),
+    ("Structural inequality", "Lower-income communities and communities that are predominantly minority communities are affected at higher rates than other communities.", "black_butterfly_geography", "annual_tax_lien_sales"),
     ("Community outreach", "Instead of waiting for people to come to you, go to them.", "community_outreach", "community_legal_clinics"),
-    ("Community outreach", "You're just giving them a number... versus... make a connection for you with this particular person.", "referral_gap", "referral_network"),
+    ("Community outreach", "You're just giving them a number and saying contact them, versus saying I'm going to make a connection for you with this particular person in this particular organization so that your case can move forward.", "referral_gap", "referral_network"),
+]
+
+TRANSCRIPT_RECURRING_TERMS = [
+    ("title", 122),
+    ("deed", 51),
+    ("repair", 48),
+    ("family", 43),
+    ("will", 39),
+    ("estate planning", 34),
+    ("home repair", 28),
+    ("income", 20),
+    ("property tax", 17),
+    ("heirs", 15),
+    ("death", 14),
+    ("siblings", 13),
+    ("vacant housing", 13),
+    ("heirs property", 12),
+    ("wealth", 12),
+    ("tax sale", 11),
+    ("asset", 11),
+    ("foreclosure", 9),
+    ("probate", 8),
+    ("equity", 7),
+    ("seniors", 7),
+    ("legal aid", 6),
+    ("mediation", 6),
+    ("shelter", 6),
+    ("renters", 5),
+    ("city innovation", 5),
+    ("tax credit", 4),
+    ("repair grant", 4),
+    ("Black Butterfly", 3),
+    ("racialized inequality", 3),
+    ("Register of Wills", 3),
+    ("transportation", 3),
+    ("referral", 3),
+    ("consensus", 3),
+    ("Pro Bono Resource Center", 3),
+    ("MVLS", 2),
+    ("fixed income", 2),
+    ("neighborhood association", 2),
+    ("civic designer", 2),
+    ("warm handoff", 1),
+    ("transfer-on-death deed", 1),
+    ("life estate deed", 1),
+    ("owner-occupied", 1),
+    ("housing stability", 1),
 ]
 
 EVIDENCE_DOMAINS = {

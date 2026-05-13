@@ -1,8 +1,7 @@
-import math
 import sys
+from html import escape
 from pathlib import Path
 
-import plotly.graph_objects as go
 import streamlit as st
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -14,6 +13,7 @@ from tangled_titles_content import (
     INTERVIEW_THEMES,
     NODE_BY_ID,
     QUOTE_WALL_ITEMS,
+    TRANSCRIPT_RECURRING_TERMS,
     THEME_BY_ID,
     THEME_LEVEL_ORDER,
     nodes_for_theme,
@@ -123,53 +123,46 @@ def interview_word_frequencies(themes: list[dict]) -> list[tuple[str, int]]:
             term = aliases.get(word.strip("!?;:()[]\"'"), "")
             if term:
                 counts[term] = counts.get(term, 0) + 1
-    return sorted(counts.items(), key=lambda item: item[1], reverse=True)[:34]
+    for term, count in TRANSCRIPT_RECURRING_TERMS:
+        counts[term] = max(counts.get(term, 0), count)
+    return sorted(counts.items(), key=lambda item: item[1], reverse=True)[:60]
 
 
 def render_interview_word_cloud(themes: list[dict]) -> None:
     terms = interview_word_frequencies(themes)
     max_count = max(count for _term, count in terms)
-    xs = []
-    ys = []
-    sizes = []
-    labels = []
-    hover = []
+    colors = ["#294943", "#8f3d46", "#6fa8c8", "#c88f2e", "#4f8f5b", "#18312d", "#8a5a35", "#c96b68"]
+    spans = []
     for idx, (term, count) in enumerate(terms):
-        angle = idx * 2.35
-        radius = 0.12 + (idx % 7) * 0.12 + (idx // 7) * 0.08
-        xs.append(0.5 + radius * math.cos(angle))
-        ys.append(0.5 + radius * math.sin(angle) * 0.72)
-        sizes.append(18 + 34 * (count / max_count))
-        labels.append(term)
-        hover.append(f"{term}<br>{count} mentions across curated themes and quotes")
-
-    fig = go.Figure(
-        data=go.Scatter(
-            x=xs,
-            y=ys,
-            mode="text",
-            text=labels,
-            textfont=dict(
-                size=sizes,
-                color=[
-                    "#294943", "#8f3d46", "#6fa8c8", "#c88f2e", "#4f8f5b",
-                    "#18312d", "#8a5a35", "#c96b68",
-                ]
-                * 5,
-            ),
-            hovertext=hover,
-            hovertemplate="%{hovertext}<extra></extra>",
-        ),
+        size = 0.86 + 1.75 * (count / max_count)
+        weight = 650 if count >= 10 else 560
+        color = colors[idx % len(colors)]
+        spans.append(
+            f'<span title="{escape(str(count))} transcript mentions" '
+            f'style="font-size:{size:.2f}rem; font-weight:{weight}; color:{color};">'
+            f'{escape(term)}</span>'
+        )
+    st.markdown(
+        f"""
+        <div style="
+            background:#fffaf0;
+            border:1px solid rgba(24,49,45,0.16);
+            border-radius:12px;
+            padding:1.2rem 1.35rem;
+            line-height:1.25;
+            display:flex;
+            flex-wrap:wrap;
+            gap:0.42rem 0.78rem;
+            align-items:baseline;
+        ">
+            {"".join(spans)}
+        </div>
+        <p class="muted-note" style="margin-top:0.65rem;">
+            Terms combine curated interview themes with recurring keywords counted from the supplied transcripts.
+        </p>
+        """,
+        unsafe_allow_html=True,
     )
-    fig.update_layout(
-        height=460,
-        margin=dict(l=10, r=10, t=20, b=10),
-        paper_bgcolor="#fffaf0",
-        plot_bgcolor="#fffaf0",
-        xaxis=dict(visible=False, range=[-0.1, 1.1], fixedrange=True),
-        yaxis=dict(visible=False, range=[-0.05, 1.05], fixedrange=True),
-    )
-    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
 
 selected_theme_id = st.session_state.get("selected_theme")
@@ -318,8 +311,8 @@ with st.expander("Selected quotes behind the recurring words", expanded=False):
             with columns[idx % 2]:
                 st.markdown(
                     f"""
-                    <div class="evidence-card">
-                        <div class="mini-quote">"{quote}"</div>
+                    <div class="evidence-card" style="min-height:285px;">
+                        <div class="mini-quote" style="line-height:1.48;">"{quote}"</div>
                         <div class="badge-row">
                             <span class="node-chip">{theme_label}</span>
                         </div>

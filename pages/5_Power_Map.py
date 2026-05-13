@@ -15,6 +15,7 @@ from tangled_titles_content import (
     LEVEL_ORDER,
     NODE_BY_ID,
     POWER_NODES,
+    QUALITATIVE_SLIDE_RESOURCE_LINKS,
     STRUCTURAL_SUBLEVELS,
     SYSTEM_TOUCHPOINT_LANES,
     THEME_BY_ID,
@@ -548,3 +549,10 @@ with st.expander("Explore intervention leverage points", expanded=False):
                 key=f"leverage-{leverage_point}-{theme_id}",
             ):
                 switch_to_interview(theme_id)
+
+with st.expander("Implementation resources referenced in the qualitative slides", expanded=False):
+    st.markdown(
+        "These links supplement the intervention logic with concrete local planning, legal aid, financial counseling, and tax-sale prevention touchpoints."
+    )
+    for resource in QUALITATIVE_SLIDE_RESOURCE_LINKS:
+        st.markdown(f"- [{resource['label']}]({resource['url']}): {resource['focus']}")
