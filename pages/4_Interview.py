@@ -25,6 +25,7 @@ apply_theme()
 
 INTERVIEW_TOC = (
     ("overview", "Overview"),
+    ("interviewee-perspectives", "Interviewee Perspectives"),
     ("three-messages", "Three Messages"),
     ("interview-word-cloud", "Recurring Words"),
     ("theme-explorer", "Theme Explorer"),
@@ -212,6 +213,49 @@ st.markdown(
     ,
     unsafe_allow_html=True,
 )
+
+section_h2("interviewee-perspectives", "Interviewee Perspectives")
+st.markdown(
+    """
+    <p class="section-subtitle">
+    The interview evidence reflects institutional and practice-based perspectives
+    from people working across civic design, city innovation, legal aid, and
+    homeownership preservation.
+    </p>
+    """,
+    unsafe_allow_html=True,
+)
+perspective_cards = [
+    (
+        "Civic design / city innovation",
+        "Baltimore Mayor's Office of Innovation civic design perspective, including work connected to homeownership preservation.",
+    ),
+    (
+        "Legal aid / homeownership preservation",
+        "Practitioners who see tangled titles through repair eligibility, probate, foreclosure, and title-clearing cases.",
+    ),
+    (
+        "Baltimore City innovation team",
+        "City-facing perspective on service pathways, resident touchpoints, and how administrative systems become visible in crisis.",
+    ),
+    (
+        "Maryland Volunteer Legal Services",
+        "Legal service perspective on estate planning, probate assistance, tax sale prevention, and warm referrals.",
+    ),
+]
+perspective_cols = st.columns(4)
+for col, (title, description) in zip(perspective_cols, perspective_cards):
+    with col:
+        st.markdown(
+            f"""
+            <div class="evidence-card compact-card" style="min-height:190px;">
+                <span class="rq-badge">Perspective</span>
+                <h3>{title}</h3>
+                <p>{description}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 section_h2("three-messages", "Three messages from the interviews")
 message_cards = [

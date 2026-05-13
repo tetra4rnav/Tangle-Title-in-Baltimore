@@ -1,4 +1,5 @@
 import sys
+import base64
 from pathlib import Path
 
 import streamlit as st
@@ -40,8 +41,20 @@ essential_terms = {
     "Legal aid",
 }
 
-st.markdown(
+INTRO_HERO_IMAGE = ROOT_DIR / "assets" / "introduction" / "resident_rowhouse_deed_mismatch.png"
+if INTRO_HERO_IMAGE.exists():
+    _intro_hero_image = (
+        f'<img src="data:image/png;base64,{base64.b64encode(INTRO_HERO_IMAGE.read_bytes()).decode("ascii")}" '
+        'alt="Resident near a Baltimore rowhouse with a deed mismatch illustration" />'
+    )
+else:
+    _intro_hero_image = """
+        <h3>Illustration placeholder: resident, rowhouse, and deed mismatch</h3>
+        <p class="muted-note">A future image can show the human story beside the paperwork record.</p>
     """
+
+st.markdown(
+    f"""
     <div class="page-hero">
         <div class="hero-copy">
             <span class="rq-badge">What is a tangled title, and why does it matter?</span>
@@ -50,8 +63,7 @@ st.markdown(
             <p class="muted-note">This matters because legal recognition often controls access to repairs, tax credits, notices, loans, and protection from displacement.</p>
         </div>
         <div class="hero-visual">
-            <h3>Illustration placeholder: resident, rowhouse, and deed mismatch</h3>
-            <p class="muted-note">A future image can show the human story beside the paperwork record.</p>
+            {_intro_hero_image}
         </div>
     </div>
     """,

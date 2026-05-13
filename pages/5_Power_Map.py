@@ -164,10 +164,10 @@ def render_structured_power_plot(nodes: list[dict]) -> None:
             x=[central_x],
             y=[central_y],
             mode="markers+text",
-            marker=dict(size=34, color="#4f8f5b", line=dict(width=2, color="#18312d")),
+            marker=dict(size=58, color="#4f8f5b", line=dict(width=2.4, color="#18312d")),
             text=["Tangled<br>Titles"],
             textposition="middle center",
-            textfont=dict(size=11, color="#ffffff"),
+            textfont=dict(size=12, color="#ffffff"),
             hovertemplate="<b>Tangled Titles</b><br>Central issue<extra></extra>",
             showlegend=False,
         )
@@ -398,22 +398,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.markdown(
-    """
-    <div class="pathway-scene">
-        <div class="scene-row">
-            <div class="scene-step"><div class="mini-house"></div><strong>Family death or transfer gap</strong><span>Ownership changes informally.</span></div>
-            <div class="scene-step"><div class="mini-doc"></div><strong>Deed mismatch</strong><span>Records do not reflect lived ownership.</span></div>
-            <div class="scene-step"><div class="mini-lock"></div><strong>Repair or benefit denial</strong><span>Programs require formal title.</span></div>
-            <div class="scene-step"><div class="mini-doc"></div><strong>Tax and legal burden</strong><span>Notices and costs accumulate.</span></div>
-            <div class="scene-step"><div class="mini-wealth"></div><strong>Sale or displacement risk</strong><span>Loss becomes possible.</span></div>
-        </div>
-    </div>
-    """
-    ,
-    unsafe_allow_html=True,
-)
-
 section_h2("hierarchical-power-map", "Hierarchical Power Map")
 central = NODE_BY_ID["tangled_titles"]
 st.markdown(

@@ -869,12 +869,6 @@ TASHA_CASE_STUDY_SOURCES = [
         "url": "https://www.ziprecruiter.com/Salaries/Front-Desk-Receptionist-Salary-in-Baltimore,MD",
         "note": "Used to ground the fictional profile's receptionist wage and annual income.",
     },
-    {
-        "label": "Forebears, Most Common Last Names in Maryland",
-        "date": "accessed for name plausibility",
-        "url": "https://forebears.io/united-states/maryland/surnames",
-        "note": "Used only as background for choosing a common Maryland surname for a fictional composite resident.",
-    },
 ]
 
 RESIDENT_JOURNEY_STAGES = [
@@ -889,7 +883,7 @@ RESIDENT_JOURNEY_STAGES = [
         "power_map_connection": "Individual level, interpersonal level, estate planning, formal ownership vs lived ownership",
         "barrier": "The problem is mostly invisible because Tasha's grandparents did not have a notarized will or clear transfer documents, so deceased owners remain on the deed.",
         "evidence_note": "Profile details draw from the provided avatar background and salary source. The lack of estate planning reflects the case-study framing around first-generation homeowners, limited knowledge of home transfers, and high legal costs.",
-        "source_labels": ["ZipRecruiter", "Forebears", "BWDC"],
+        "source_labels": ["ZipRecruiter", "BWDC"],
     },
     {
         "id": "repair_application_blocked",
