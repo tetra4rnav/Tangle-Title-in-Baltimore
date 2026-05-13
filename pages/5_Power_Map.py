@@ -529,6 +529,16 @@ st.info(
     "The system contains more documented barriers than facilitators, which suggests that intervention requires coordinated changes across legal, housing, tax, and community systems."
 )
 
+with st.expander("How this page aligns with the qualitative slides", expanded=False):
+    st.markdown(
+        """
+        - **Ecosystem overview:** the hierarchy separates individual, interpersonal, community, policy, economic, and societal factors.
+        - **Barriers to resolution:** node cards and the barrier/facilitator summary cover legal cost, probate, document burden, repair eligibility, family conflict, and tax-sale risk.
+        - **Facilitators to resolution:** legal aid, MVLS, community clinics, neighborhood outreach, mediation, warm handoffs, and preventive deed tools are retained as facilitator nodes.
+        - **Intervention points:** the final section organizes individual, household, community, and structural leverage points without duplicating the interview evidence.
+        """
+    )
+
 section_h2("intervention-leverage-points", "Intervention Leverage Points")
 st.markdown(
     """

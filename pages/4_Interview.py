@@ -319,6 +319,16 @@ for col, (title, description) in zip(perspective_cols, perspective_cards):
             unsafe_allow_html=True,
         )
 
+with st.expander("How this page aligns with the qualitative slides", expanded=False):
+    st.markdown(
+        """
+        - **Methods / positionality / codebook:** this page presents a curated synthesis of stakeholder interviews rather than full transcripts.
+        - **Multilevel impact:** the themes connect resident experience to family, service, legal, economic, and structural systems.
+        - **Social patterns and demographic concentration:** interview themes include Black Butterfly geography, fixed-income seniors, and racialized housing inequality.
+        - **Barriers, facilitators, and recommendations:** detailed system barriers and intervention points are carried forward into the Power Map page.
+        """
+    )
+
 section_h2("three-messages", "Three messages from the interviews")
 message_cards = [
     (

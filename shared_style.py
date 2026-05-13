@@ -465,6 +465,7 @@ def apply_theme() -> None:
             margin: 0.4rem 0;
             color: var(--bwdc-teal-deep);
             font-size: 0.95rem;
+            font-style: italic;
             line-height: 1.42;
             background: rgba(255, 247, 220, 0.58);
         }
