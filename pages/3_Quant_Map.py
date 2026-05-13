@@ -1186,15 +1186,21 @@ with st.expander("At-risk property definition", expanded=False):
         """
         There is no broadly adopted standard method for measuring tangled titles.
         BWDC adopted PropertyRadar-based criteria to identify properties likely
-        to have tangled-title risk. These include properties owned by a single
-        person who is likely deceased, properties with ownership transfers more
-        than 50 years ago, properties whose last transfer document was an
-        Affidavit of Death more than one year ago, multiple-owner properties with
-        inheritance-related transfers, and multiple-owner properties where one
-        owner is deceased and ownership does not automatically transfer. In our
-        analyses, at-risk properties are identified as those likely to become
-        tangled, often due to deceased owners or multiple inheritance-based
-        ownership structures.
+        to have tangled-title risk.
+
+        Criteria include:
+
+        - Properties owned by a single person who is likely deceased.
+        - Properties with ownership transfers more than 50 years ago.
+        - Properties whose last transfer document was an Affidavit of Death more
+          than one year ago.
+        - Multiple-owner properties with inheritance-related transfers.
+        - Multiple-owner properties where one owner is deceased and ownership
+          does not automatically transfer.
+
+        In our analyses, at-risk properties are identified as those likely to
+        become tangled, often due to deceased owners or multiple
+        inheritance-based ownership structures.
         """
     )
 
