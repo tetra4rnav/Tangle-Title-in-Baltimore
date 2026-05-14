@@ -318,31 +318,42 @@ def apply_theme() -> None:
         }
 
         .action-theme-list {
-            display: grid;
-            gap: 0.48rem;
+            display: block;
             margin-top: 0.65rem;
         }
 
-        .action-theme-row {
+        .action-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.65rem 0 0;
+        }
+
+        .action-bullet-list li {
+            position: relative;
+            padding: 0.58rem 0.68rem 0.58rem 1.8rem;
+            margin: 0.42rem 0;
             border: 1px solid rgba(41, 73, 67, 0.12);
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.68);
-            padding: 0.62rem 0.68rem;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--bwdc-muted);
+            line-height: 1.38;
         }
 
-        .action-theme-row strong {
-            display: block;
+        .action-bullet-list li::before {
+            content: "";
+            position: absolute;
+            left: 0.68rem;
+            top: 0.92rem;
+            width: 0.42rem;
+            height: 0.42rem;
+            border-radius: 999px;
+            background: var(--bwdc-gold-deep);
+        }
+
+        .action-bullet-list strong {
+            color: var(--bwdc-teal-deep);
             font-size: 0.92rem;
             line-height: 1.28;
-            color: var(--bwdc-teal-deep);
-            margin-bottom: 0.18rem;
-        }
-
-        .action-theme-row span {
-            display: block;
-            color: var(--bwdc-muted);
-            font-size: 0.84rem;
-            line-height: 1.36;
         }
 
         .action-button-note {

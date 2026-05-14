@@ -578,28 +578,22 @@ with st.expander("Explore intervention leverage points", expanded=False):
             themes = [theme for theme in themes if theme]
             summary = themes[0]["implications"] if themes else "Connect this leverage point to related interview evidence."
             theme_rows = "".join(
-                f"""
-                <div class="action-theme-row">
-                    <strong>{escape(theme["title"])}</strong>
-                    <span>{escape(theme["implications"])}</span>
-                </div>
-                """
+                f"<li><strong>{escape(theme['title'])}</strong><br>{escape(theme['implications'])}</li>"
                 for theme in themes
             )
             st.markdown(
-                f"""
-                <div class="action-tile">
-                    <div class="action-kicker">
-                        <span class="tag-pill">Leverage point</span>
-                        <span class="action-number">{idx + 1}</span>
-                    </div>
-                    <h3>{escape(leverage_point)}</h3>
-                    <p class="action-summary">{escape(summary)}</p>
-                    <div class="action-theme-list">
-                        {theme_rows}
-                    </div>
-                </div>
-                """,
+                (
+                    '<div class="action-tile">'
+                    '<div class="action-kicker">'
+                    '<span class="tag-pill">Leverage point</span>'
+                    f'<span class="action-number">{idx + 1}</span>'
+                    '</div>'
+                    f'<h3>{escape(leverage_point)}</h3>'
+                    f'<p class="action-summary">{escape(summary)}</p>'
+                    '<p class="action-button-note"><strong>Evidence connections</strong></p>'
+                    f'<ul class="action-bullet-list">{theme_rows}</ul>'
+                    '</div>'
+                ),
                 unsafe_allow_html=True,
             )
             st.markdown('<p class="action-button-note">Open related interview evidence</p>', unsafe_allow_html=True)
