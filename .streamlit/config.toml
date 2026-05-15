@@ -7,7 +7,7 @@
 baseFontSize = 18
 
 # Align Streamlit widget focus, active, and selected states with the site palette.
-primaryColor = "#c88f2e"
+primaryColor = "#8f6232"
 backgroundColor = "#fffaf0"
 secondaryBackgroundColor = "#fff7dc"
 textColor = "#18312d"

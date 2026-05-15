@@ -16,6 +16,7 @@ def apply_theme() -> None:
             --bwdc-cream-soft: #fffaf0;
             --bwdc-gold: #efc267;
             --bwdc-gold-deep: #c88f2e;
+            --bwdc-action: #8f6232;
             --bwdc-sage: #a9c77b;
             --bwdc-mint: #d7e8bd;
             --bwdc-rose: #c96b68;
@@ -85,21 +86,21 @@ def apply_theme() -> None:
         div[data-testid="stMultiSelect"] [data-baseweb="select"] > div,
         div[data-testid="stTextInput"] input,
         div[data-testid="stTextArea"] textarea {
-            border-color: rgba(184, 138, 45, 0.32) !important;
+            border-color: rgba(143, 98, 50, 0.3) !important;
         }
 
         div[data-testid="stSelectbox"] [data-baseweb="select"] > div:focus-within,
         div[data-testid="stMultiSelect"] [data-baseweb="select"] > div:focus-within,
         div[data-testid="stTextInput"] input:focus,
         div[data-testid="stTextArea"] textarea:focus {
-            border-color: var(--bwdc-gold-deep) !important;
-            box-shadow: 0 0 0 1px var(--bwdc-gold-deep) !important;
-            outline-color: var(--bwdc-gold-deep) !important;
+            border-color: var(--bwdc-action) !important;
+            box-shadow: 0 0 0 1px var(--bwdc-action) !important;
+            outline-color: var(--bwdc-action) !important;
         }
 
         div[data-baseweb="popover"] [role="option"]:hover,
         div[data-baseweb="popover"] [aria-selected="true"] {
-            background: rgba(184, 138, 45, 0.16) !important;
+            background: rgba(143, 98, 50, 0.14) !important;
         }
 
         div[data-testid="stButton"] button,
@@ -115,9 +116,9 @@ def apply_theme() -> None:
         button[kind]:hover,
         button[data-testid]:hover,
         [role="button"]:hover {
-            border-color: var(--bwdc-gold-deep) !important;
+            border-color: var(--bwdc-action) !important;
             color: var(--bwdc-teal-deep) !important;
-            box-shadow: 0 0 0 1px rgba(200, 143, 46, 0.28) !important;
+            box-shadow: 0 0 0 1px rgba(143, 98, 50, 0.24) !important;
         }
 
         div[data-testid="stButton"] button:focus,
@@ -130,9 +131,9 @@ def apply_theme() -> None:
         button[data-testid]:active,
         [role="button"]:focus,
         [role="button"]:active {
-            border-color: var(--bwdc-gold-deep) !important;
-            box-shadow: 0 0 0 2px rgba(200, 143, 46, 0.34) !important;
-            outline-color: var(--bwdc-gold-deep) !important;
+            border-color: var(--bwdc-action) !important;
+            box-shadow: 0 0 0 2px rgba(143, 98, 50, 0.28) !important;
+            outline-color: var(--bwdc-action) !important;
         }
 
         div[data-testid="stCheckbox"] label,
@@ -144,15 +145,15 @@ def apply_theme() -> None:
         div[data-testid="stRadio"] [aria-checked="true"],
         div[data-testid="stCheckbox"] input:checked + div,
         div[data-testid="stRadio"] input:checked + div {
-            border-color: var(--bwdc-gold-deep) !important;
-            background-color: var(--bwdc-gold-deep) !important;
-            box-shadow: 0 0 0 2px rgba(200, 143, 46, 0.26) !important;
+            border-color: var(--bwdc-action) !important;
+            background-color: var(--bwdc-action) !important;
+            box-shadow: 0 0 0 2px rgba(143, 98, 50, 0.22) !important;
         }
 
         div[data-baseweb="tab-list"] [aria-selected="true"] {
             color: var(--bwdc-teal-deep) !important;
-            border-color: var(--bwdc-gold-deep) !important;
-            box-shadow: inset 0 -3px 0 var(--bwdc-gold-deep) !important;
+            border-color: var(--bwdc-action) !important;
+            box-shadow: inset 0 -3px 0 var(--bwdc-action) !important;
         }
 
         section[data-testid="stSidebar"] {
@@ -174,10 +175,10 @@ def apply_theme() -> None:
         div[data-testid="stSidebarNav"] a:focus,
         div[data-testid="stSidebarNav"] a:active,
         div[data-testid="stSidebarNav"] a[aria-current="page"] {
-            background: rgba(239, 194, 103, 0.22) !important;
-            border-color: var(--bwdc-gold) !important;
-            box-shadow: inset 3px 0 0 var(--bwdc-gold) !important;
-            outline-color: var(--bwdc-gold) !important;
+            background: rgba(143, 98, 50, 0.24) !important;
+            border-color: var(--bwdc-action) !important;
+            box-shadow: inset 3px 0 0 var(--bwdc-action) !important;
+            outline-color: var(--bwdc-action) !important;
         }
 
         .support-badge {
@@ -307,6 +308,19 @@ def apply_theme() -> None:
             min-height: 210px;
             padding: 1rem;
             background: rgba(255, 255, 255, 0.82);
+        }
+
+        .profile-card.perspective-card h3 {
+            font-size: 0.98rem;
+            line-height: 1.22;
+            overflow-wrap: normal;
+            word-break: normal;
+            hyphens: none;
+        }
+
+        .profile-card.perspective-card p {
+            font-size: 0.9rem;
+            line-height: 1.42;
         }
 
         .profile-card p,

@@ -387,7 +387,7 @@ for col, (title, description) in zip(perspective_cols, perspective_cards):
     with col:
         st.markdown(
             f"""
-            <div class="profile-card">
+            <div class="profile-card perspective-card">
                 <span class="rq-badge">Perspective</span>
                 <h3>{title}</h3>
                 <p>{description}</p>
