@@ -360,19 +360,19 @@ st.markdown(
 )
 perspective_cards = [
     (
-        "Legal Assistance Organization Leader 1",
+        "Legal Assistance Organization Leader",
         "Homeownership-preservation and legal-aid perspective on estate planning, probate, legal costs, education, transfer tools, and frontline case finding.",
     ),
     (
-        "Legal Assistance Organization Leader 2",
+        "Legal Assistance Organization Leader",
         "Legal and housing-systems perspective on repair-grant-linked estate planning, mediation, community partnerships, and data-informed outreach.",
     ),
     (
-        "Legal Assistance Organization Leader 3",
+        "Legal Assistance Organization Leader",
         "Community-facing service perspective on client demographics, Black Butterfly geography, warm referrals, and tracking gaps after referral.",
     ),
     (
-        "Local Policymaker 1",
+        "Local Policymaker",
         "Policy and city-systems perspective on enforcement, data gaps, intergenerational education, elderly homeowner prioritization, and mediation.",
     ),
 ]
