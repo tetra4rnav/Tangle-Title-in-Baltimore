@@ -339,6 +339,17 @@ st.markdown(
     ,
     unsafe_allow_html=True,
 )
+st.markdown(
+    """
+    <div class="image-placeholder-card">
+        <span class="tag-pill">Image placeholder</span>
+        <h3>Stakeholder evidence, not transcript dumping</h3>
+        <p>Suggested image: a respectful editorial-style scene of interview notes, highlighted quotes, a rowhouse outline, and civic/legal service touchpoints.</p>
+        <span class="image-placeholder-path">assets/placeholders/interview_stakeholder_evidence.png</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 section_h2("interviewee-perspectives", "Interviewee Perspectives")
 st.markdown(
@@ -502,6 +513,17 @@ st.markdown(
     <p class="section-subtitle">This interactive word cloud offers a quick orientation to recurring interview language. It is not a substitute for the themes, quotes, and resident narratives below.</p>
     """
     ,
+    unsafe_allow_html=True,
+)
+st.markdown(
+    """
+    <div class="image-placeholder-card">
+        <span class="tag-pill">Image placeholder</span>
+        <h3>Recurring themes from interviews</h3>
+        <p>Suggested image: a calm visual cluster of recurring qualitative themes: repairs, deed transfer, estate planning, family conflict, tax sale, and community outreach.</p>
+        <span class="image-placeholder-path">assets/placeholders/interview_recurring_themes.png</span>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 

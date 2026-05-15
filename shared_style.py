@@ -884,6 +884,45 @@ def apply_theme() -> None:
             line-height: 1.35;
         }
 
+        .image-placeholder-card {
+            border: 1px dashed rgba(41, 73, 67, 0.32);
+            border-radius: 10px;
+            background:
+                linear-gradient(135deg, rgba(255, 250, 240, 0.96), rgba(215, 232, 189, 0.42)),
+                radial-gradient(circle at 18% 20%, rgba(184, 138, 45, 0.16), transparent 34%);
+            padding: 1rem 1.1rem;
+            min-height: 230px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0.6rem 0 1.2rem;
+        }
+
+        .image-placeholder-card h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--bwdc-teal-deep);
+        }
+
+        .image-placeholder-card p {
+            margin: 0;
+            color: var(--bwdc-muted);
+            line-height: 1.45;
+        }
+
+        .image-placeholder-path {
+            display: inline-block;
+            width: fit-content;
+            border-radius: 999px;
+            background: rgba(255, 247, 220, 0.95);
+            border: 1px solid rgba(184, 138, 45, 0.24);
+            padding: 0.28rem 0.62rem;
+            font-size: 0.82rem;
+            color: var(--bwdc-teal-deep);
+            font-weight: 700;
+        }
+
         .journey-image-placeholder {
             min-height: 260px;
             border: 1px dashed rgba(41, 73, 67, 0.34);

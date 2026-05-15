@@ -4,6 +4,7 @@ from pathlib import Path
 
 import plotly.graph_objects as go
 import streamlit as st
+import streamlit.components.v1 as components
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -35,7 +36,6 @@ POWER_MAP_TOC = (
     ("overview", "Overview"),
     ("hierarchical-power-map", "Hierarchical Power Map"),
     ("system-touchpoint-map", "System Touchpoint Map"),
-    ("barriers-and-facilitators", "Barriers and Facilitators"),
     ("intervention-leverage-points", "Intervention Leverage Points"),
 )
 render_page_toc("power-map", POWER_MAP_TOC)
@@ -119,7 +119,24 @@ def plot_node_number(node_id: str) -> int:
     return node_ids.index(node_id) + 1 if node_id in node_ids else 0
 
 
-def render_structured_power_plot(nodes: list[dict]) -> None:
+def selected_node_id_from_plot_state(plot_state) -> str | None:
+    """Read a clicked Plotly point from Streamlit's selection event."""
+    if not plot_state:
+        return None
+    try:
+        points = plot_state.selection.points
+    except AttributeError:
+        points = plot_state.get("selection", {}).get("points", []) if isinstance(plot_state, dict) else []
+    if not points:
+        return None
+    point = points[0]
+    customdata = getattr(point, "customdata", None)
+    if customdata is None and isinstance(point, dict):
+        customdata = point.get("customdata")
+    return customdata if isinstance(customdata, str) else None
+
+
+def render_structured_power_plot(nodes: list[dict]) -> str | None:
     """Render a fixed-position ecosystem map with no force layout or overlapping labels."""
     level_sequence = [
         "Individual Level Factors",
@@ -209,6 +226,7 @@ def render_structured_power_plot(nodes: list[dict]) -> None:
         colors: list[str] = []
         symbols: list[str] = []
         hover_texts: list[str] = []
+        node_ids: list[str] = []
 
         for idx, node in enumerate(level_nodes):
             columns = 2
@@ -238,6 +256,7 @@ def render_structured_power_plot(nodes: list[dict]) -> None:
             texts.append(str(number))
             colors.append(type_colors.get(node["type"], "#294943"))
             symbols.append(type_symbols.get(node["type"], "circle"))
+            node_ids.append(node["id"])
             hover_texts.append(
                 "<br>".join(
                     [
@@ -266,6 +285,7 @@ def render_structured_power_plot(nodes: list[dict]) -> None:
                     textfont=dict(size=10, color="#ffffff"),
                     hovertext=hover_texts,
                     hovertemplate="%{hovertext}<extra></extra>",
+                    customdata=node_ids,
                     showlegend=False,
                 )
             )
@@ -290,10 +310,18 @@ def render_structured_power_plot(nodes: list[dict]) -> None:
         xaxis=dict(visible=False, fixedrange=True),
         yaxis=dict(visible=False, fixedrange=True),
     )
-    st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+    plot_state = st.plotly_chart(
+        fig,
+        width="stretch",
+        key="structured-power-plot",
+        on_select="rerun",
+        selection_mode="points",
+        config={"displayModeBar": False},
+    )
+    return selected_node_id_from_plot_state(plot_state)
 
 
-def render_node_card(node: dict, detail: bool = False, key_prefix: str = "node") -> None:
+def render_node_card(node: dict, detail: bool = False, key_prefix: str = "node", show_select_button: bool = True) -> None:
     first_sentence = node["description"].split(".")[0].strip() + "."
     st.markdown(
         f"""
@@ -331,13 +359,14 @@ def render_node_card(node: dict, detail: bool = False, key_prefix: str = "node")
                         unsafe_allow_html=True,
                     )
 
-    if st.button(
-        "Show details here",
-        key=f"{key_prefix}-select-node-{node['id']}",
-        use_container_width=True,
-    ):
-        st.session_state["selected_node"] = node["id"]
-        st.rerun()
+    if show_select_button:
+        if st.button(
+            "Show details here",
+            key=f"{key_prefix}-select-node-{node['id']}",
+            use_container_width=True,
+        ):
+            st.session_state["selected_node"] = node["id"]
+            st.rerun()
 
 
 def render_level(level: str, nodes: list[dict], expanded: bool = False) -> None:
@@ -409,6 +438,17 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+st.markdown(
+    """
+    <div class="image-placeholder-card">
+        <span class="tag-pill">Image placeholder</span>
+        <h3>Multilevel ecosystem around a tangled title</h3>
+        <p>Suggested image: a Baltimore rowhouse at the center, surrounded by family, legal records, repair program paperwork, tax notices, and community support actors.</p>
+        <span class="image-placeholder-path">assets/placeholders/power_map_multilevel_ecosystem.png</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 section_h2("hierarchical-power-map", "Hierarchical Power Map")
 central = NODE_BY_ID["tangled_titles"]
 st.markdown(
@@ -450,22 +490,44 @@ with st.container(border=True):
         """,
         unsafe_allow_html=True,
     )
-    render_structured_power_plot(filtered_nodes)
-    if filtered_nodes:
-        plot_options = {
-            f"{plot_node_number(node['id'])}. {node['label']}": node["id"]
-            for node in sorted(filtered_nodes, key=lambda item: plot_node_number(item["id"]))
-        }
-        selected_plot_label = st.selectbox(
-            "Select a plotted node to open its detail panel",
-            ["Choose a node"] + list(plot_options.keys()),
-            key="structured-plot-node-select",
+    clicked_plot_node_id = render_structured_power_plot(filtered_nodes)
+    if clicked_plot_node_id:
+        st.session_state["plot_selected_node"] = clicked_plot_node_id
+        components.html(
+            """
+            <script>
+            setTimeout(() => {
+                const target = window.parent.document.getElementById("plot-node-detail");
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }, 150);
+            </script>
+            """,
+            height=0,
         )
-        if selected_plot_label != "Choose a node" and st.button("Open selected plotted node"):
-            st.session_state["selected_node"] = plot_options[selected_plot_label]
-            st.rerun()
+    if filtered_nodes:
+        st.caption("Click any numbered node in the plot to open its detail panel below.")
     else:
         st.warning("No nodes match the current filters.")
+
+    filtered_node_ids = {node["id"] for node in filtered_nodes}
+    plot_detail_node = NODE_BY_ID.get(st.session_state.get("plot_selected_node"))
+    if plot_detail_node and plot_detail_node["id"] in filtered_node_ids:
+        st.markdown(
+            """
+            <div class="detail-panel" id="plot-node-detail">
+                <span class="tag-pill">Selected node detail</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        render_node_card(
+            plot_detail_node,
+            detail=True,
+            key_prefix="plot-detail",
+            show_select_button=False,
+        )
 
 with st.expander("Node number key", expanded=False):
     key_rows = [
@@ -502,6 +564,17 @@ st.markdown(
     ,
     unsafe_allow_html=True,
 )
+st.markdown(
+    """
+    <div class="image-placeholder-card">
+        <span class="tag-pill">Image placeholder</span>
+        <h3>Resident encounters across systems</h3>
+        <p>Suggested image: a clean swimlane-style illustration showing the resident moving from home and family records to repair assistance, legal aid, tax offices, and market pressure.</p>
+        <span class="image-placeholder-path">assets/placeholders/power_map_system_touchpoints.png</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 touchpoint_levels = {
     "Resident / household": "Individual Level Factors",
     "Family / interpersonal actors": "Interpersonal Level Factors",
@@ -529,37 +602,6 @@ for idx, lane in enumerate(SYSTEM_TOUCHPOINT_LANES):
             """,
             unsafe_allow_html=True,
         )
-
-section_h2("barriers-and-facilitators", "Barriers and Facilitators")
-cols = st.columns(3)
-for column, node_type in zip(cols, ["Barrier", "Facilitator", "Mixed"]):
-    typed_nodes = [node for node in POWER_NODES if node["type"] == node_type]
-    with column:
-        levels_text = "; ".join(sorted({node["level"] for node in typed_nodes})[:4])
-        st.markdown(
-            f"""
-            <div class="metric-card">
-                {type_badge(node_type)}
-                <span class="metric-value">{len(typed_nodes)}</span>
-                <p class="muted-note">{escape(levels_text)}</p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-st.info(
-    "The system contains more documented barriers than facilitators, which suggests that intervention requires coordinated changes across legal, housing, tax, and community systems."
-)
-
-with st.expander("Evidence patterns represented in the Power Map", expanded=False):
-    st.markdown(
-        """
-        - **Multilevel impact:** the hierarchy separates individual, interpersonal, community, policy, economic, and societal factors.
-        - **Barriers to resolution:** node cards cover legal cost, probate, document burden, repair eligibility, family conflict, tax-sale risk, and data gaps.
-        - **Facilitators to resolution:** legal aid, MVLS, community clinics, neighborhood outreach, mediation, warm handoffs, and preventive deed tools are retained as facilitator nodes.
-        - **Prevention logic:** the final section organizes estate planning, frontline case finding, repair-program screening, mediation, and tax-sale prevention without duplicating the full interview evidence.
-        """
-    )
 
 section_h2("intervention-leverage-points", "Intervention Leverage Points")
 st.markdown(
