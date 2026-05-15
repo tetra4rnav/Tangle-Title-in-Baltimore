@@ -1,5 +1,6 @@
 import sys
 import json
+import base64
 from html import escape
 from pathlib import Path
 
@@ -39,6 +40,19 @@ def switch_to_power_map(node_id: str) -> None:
     st.session_state["selected_section"] = "Power Map"
     st.session_state["selected_node"] = node_id
     st.switch_page("pages/5_Power_Map.py")
+
+
+def render_local_image(filename: str, class_name: str, alt: str) -> None:
+    image_bytes = (PLACEHOLDER_DIR / filename).read_bytes()
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    st.markdown(
+        f"""
+        <div class="{class_name}">
+            <img src="data:image/jpeg;base64,{encoded}" alt="{escape(alt)}">
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 QUOTE_SOURCE_BY_TEXT = {
@@ -340,8 +354,6 @@ st.markdown(
     ,
     unsafe_allow_html=True,
 )
-st.image(PLACEHOLDER_DIR / "interview_stakeholder_evidence.png", use_container_width=True)
-
 section_h2("interviewee-perspectives", "Interviewee Perspectives")
 st.markdown(
     """
@@ -383,6 +395,12 @@ for col, (title, description) in zip(perspective_cols, perspective_cards):
             """,
             unsafe_allow_html=True,
         )
+
+render_local_image(
+    "interview_stakeholder_evidence.png",
+    "image-banner",
+    "Community-facing stakeholder engagement and outreach.",
+)
 
 section_h2("three-messages", "Three messages from the interviews")
 message_cards = [
@@ -499,16 +517,21 @@ for idx, (title, bullets, quotes) in enumerate(highlight_cards):
             )
 
 section_h2("interview-word-cloud", "What Came Up Repeatedly in Interviews")
-st.markdown(
-    """
-    <p class="section-subtitle">This interactive word cloud offers a quick orientation to recurring interview language. It is not a substitute for the themes, quotes, and resident narratives below.</p>
-    """
-    ,
-    unsafe_allow_html=True,
-)
-_, recurring_image_col, _ = st.columns([0.22, 0.56, 0.22])
-with recurring_image_col:
-    st.image(PLACEHOLDER_DIR / "interview_recurring_themes.png", use_container_width=True)
+word_intro_col, word_image_col = st.columns([0.68, 0.32], vertical_alignment="center")
+with word_intro_col:
+    st.markdown(
+        """
+        <p class="section-subtitle">This interactive word cloud offers a quick orientation to recurring interview language. It is not a substitute for the themes, quotes, and resident narratives below.</p>
+        """
+        ,
+        unsafe_allow_html=True,
+    )
+with word_image_col:
+    render_local_image(
+        "interview_recurring_themes.png",
+        "image-card compact",
+        "Interview evidence and recurring themes.",
+    )
 
 with st.expander("Explore recurring words from interviews", expanded=False):
     st.markdown(

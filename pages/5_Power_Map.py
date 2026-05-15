@@ -1,4 +1,5 @@
 import sys
+import base64
 from html import escape
 from pathlib import Path
 
@@ -40,6 +41,19 @@ POWER_MAP_TOC = (
     ("intervention-leverage-points", "Intervention Leverage Points"),
 )
 render_page_toc("power-map", POWER_MAP_TOC)
+
+
+def render_local_image(filename: str, class_name: str, alt: str) -> None:
+    image_bytes = (PLACEHOLDER_DIR / filename).read_bytes()
+    encoded = base64.b64encode(image_bytes).decode("ascii")
+    st.markdown(
+        f"""
+        <div class="{class_name}">
+            <img src="data:image/jpeg;base64,{encoded}" alt="{escape(alt)}">
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def switch_to_interview(theme_id: str) -> None:
@@ -398,23 +412,19 @@ selected_node_id = st.session_state.get("selected_node")
 selected_node = NODE_BY_ID.get(selected_node_id) if selected_node_id else None
 
 st.title("Power Map")
-intro_text_col, intro_image_col = st.columns([0.56, 0.44], vertical_alignment="center")
-with intro_text_col:
-    st.markdown(
-        """
-        <div class="report-intro">
-        <p>
-        Tangled titles are not caused by one missing form. They emerge when family
-        inheritance, legal records, repair programs, tax systems, and housing markets
-        fail to recognize the same person as the homeowner.
-        </p>
-        </div>
-        """
-        ,
-        unsafe_allow_html=True,
-    )
-with intro_image_col:
-    st.image(PLACEHOLDER_DIR / "power_map_multilevel_ecosystem.png", use_container_width=True)
+st.markdown(
+    """
+    <div class="report-intro">
+    <p>
+    Tangled titles are not caused by one missing form. They emerge when family
+    inheritance, legal records, repair programs, tax systems, and housing markets
+    fail to recognize the same person as the homeowner.
+    </p>
+    </div>
+    """
+    ,
+    unsafe_allow_html=True,
+)
 
 if selected_node:
     st.markdown(
@@ -553,16 +563,21 @@ for tab, level in zip(structural_tabs, STRUCTURAL_SUBLEVELS):
         render_level(level, [node for node in filtered_nodes if node["level"] == level], expanded=False)
 
 section_h2("system-touchpoint-map", "System Touchpoint Map")
-st.markdown(
-    """
-    <p class="section-subtitle">Touchpoints show when the ecosystem becomes visible to residents.</p>
-    """
-    ,
-    unsafe_allow_html=True,
-)
-_, touchpoint_image_col, _ = st.columns([0.22, 0.56, 0.22])
+touchpoint_text_col, touchpoint_image_col = st.columns([0.68, 0.32], vertical_alignment="center")
+with touchpoint_text_col:
+    st.markdown(
+        """
+        <p class="section-subtitle">Touchpoints show when the ecosystem becomes visible to residents.</p>
+        """
+        ,
+        unsafe_allow_html=True,
+    )
 with touchpoint_image_col:
-    st.image(PLACEHOLDER_DIR / "power_map_system_touchpoints.png", use_container_width=True)
+    render_local_image(
+        "community.jpg",
+        "image-card compact",
+        "Community touchpoints and resident-facing outreach.",
+    )
 touchpoint_levels = {
     "Resident / household": "Individual Level Factors",
     "Family / interpersonal actors": "Interpersonal Level Factors",
@@ -635,9 +650,7 @@ with st.expander("Explore intervention leverage points", expanded=False):
                 unsafe_allow_html=True,
             )
 
-implementation_image_col, implementation_text_col = st.columns([0.38, 0.62], vertical_alignment="center")
-with implementation_image_col:
-    st.image(PLACEHOLDER_DIR / "implentation resoureces.png", use_container_width=True)
+implementation_text_col, implementation_image_col = st.columns([0.62, 0.38], vertical_alignment="center")
 with implementation_text_col:
     st.markdown(
         """
@@ -647,6 +660,12 @@ with implementation_text_col:
         </div>
         """,
         unsafe_allow_html=True,
+    )
+with implementation_image_col:
+    render_local_image(
+        "implentation resoureces.png",
+        "image-card implementation",
+        "Legal paperwork and service coordination.",
     )
 
 with st.expander("Local implementation resources", expanded=False):

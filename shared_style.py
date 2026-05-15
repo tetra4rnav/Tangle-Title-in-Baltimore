@@ -923,6 +923,54 @@ def apply_theme() -> None:
             font-weight: 700;
         }
 
+        .image-banner {
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 1rem 0 1.5rem 0;
+            box-shadow: 0 14px 30px rgba(24, 49, 45, 0.12);
+            border: 1px solid rgba(41, 73, 67, 0.12);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .image-banner img {
+            width: 100%;
+            max-height: 210px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-card {
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 0.35rem 0 1rem;
+            box-shadow: 0 12px 26px rgba(24, 49, 45, 0.12);
+            border: 1px solid rgba(41, 73, 67, 0.12);
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .image-card img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-card.compact img {
+            max-height: 200px;
+        }
+
+        .image-card.implementation img {
+            max-height: 240px;
+        }
+
+        .image-caption {
+            padding: 0.45rem 0.7rem 0.55rem;
+            color: var(--bwdc-muted);
+            font-size: 0.86rem;
+            line-height: 1.35;
+        }
+
         .journey-image-placeholder {
             min-height: 260px;
             border: 1px dashed rgba(41, 73, 67, 0.34);
