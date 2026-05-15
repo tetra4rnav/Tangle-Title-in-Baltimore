@@ -49,8 +49,8 @@ if INTRO_HERO_IMAGE.exists():
     )
 else:
     _intro_hero_image = """
-        <h3>Illustration placeholder: resident, rowhouse, and deed mismatch</h3>
-        <p class="muted-note">A future image can show the human story beside the paperwork record.</p>
+        <h3>Resident, rowhouse, and deed mismatch</h3>
+        <p class="muted-note">The human story sits beside the paperwork record.</p>
     """
 
 st.markdown(

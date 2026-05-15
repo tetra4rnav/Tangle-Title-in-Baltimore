@@ -409,7 +409,7 @@ with intro_text_col:
     st.markdown(
         """
         <div class="overview-inline-card" id="overview">
-            <p>Tangled titles are not caused by one missing form. They emerge when family inheritance, legal records, repair programs, tax systems, and housing markets fail to recognize the same person as the homeowner.</p>
+            <p>Tangled titles are not caused by one missing form. Using a socio-ecological lens, the map shows how family inheritance, legal records, repair programs, tax systems, and housing markets can fail to recognize the same person as the homeowner.</p>
             <p class="overview-transition">This map shows how risk is produced across connected systems:</p>
             <ul>
                 <li>Individual and family knowledge gaps can delay title clearing.</li>

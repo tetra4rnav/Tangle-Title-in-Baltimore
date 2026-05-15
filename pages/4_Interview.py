@@ -313,7 +313,7 @@ with intro_text_col:
     st.markdown(
         """
         <div class="overview-inline-card" id="overview">
-            <p>Tangled titles in Baltimore sit at the intersection of law, family, housing, and structural inequality. Interviews with legal, housing, civic design, and policy stakeholders show that title problems often remain invisible until residents seek repairs, receive tax sale notices, or try to access public benefits.</p>
+            <p>Tangled titles in Baltimore sit at the intersection of law, family, housing, and structural inequality. Semi-structured Zoom interviews with organization leaders, a local policymaker, and administrative staff show that title problems often remain invisible until residents seek repairs, receive tax sale notices, or try to access public benefits.</p>
             <p class="overview-transition">Across interviews, stakeholders repeatedly emphasized:</p>
             <ul>
                 <li>Tangled titles are not only a paperwork problem.</li>
@@ -377,8 +377,12 @@ perspective_cards = [
         "Local Policymaker",
         "Policy and city-systems perspective on enforcement, data gaps, intergenerational education, elderly homeowner prioritization, and mediation.",
     ),
+    (
+        "Administrative Staff",
+        "Institutional and administrative perspective on how residents encounter fragmented legal, housing, and public-service systems.",
+    ),
 ]
-perspective_cols = st.columns(4)
+perspective_cols = st.columns(5)
 for col, (title, description) in zip(perspective_cols, perspective_cards):
     with col:
         st.markdown(

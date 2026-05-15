@@ -289,6 +289,22 @@ POWER_NODES = [
         "related_interview_themes": ["repair_grant_policy", "preventive_planning"],
     },
     {
+        "id": "eminent_domain_asset_forfeiture",
+        "label": "Eminent domain and civil asset forfeiture",
+        "level": "Policy-Level Determinants",
+        "type": "Barrier",
+        "description": "Public taking, forfeiture, and related legal powers can compound property insecurity when residents already lack clear title or recognized ownership standing.",
+        "related_interview_themes": ["tax_sale_vulnerability", "black_butterfly_geography"],
+    },
+    {
+        "id": "reparations_commission_remediation",
+        "label": "Reparations-oriented tangled-title remediation",
+        "level": "Policy-Level Determinants",
+        "type": "Facilitator",
+        "description": "Policy proposals can prioritize tangled-title remediation as part of broader repair for racialized housing and wealth extraction.",
+        "related_interview_themes": ["black_butterfly_geography", "title_blocks_equity"],
+    },
+    {
         "id": "high_cost_title_clearing",
         "label": "High cost of title-clearing and estate-planning services",
         "level": "Economic-Level Determinants",
@@ -337,6 +353,14 @@ POWER_NODES = [
         "related_interview_themes": ["information_gap", "inheritance_myth"],
     },
     {
+        "id": "historic_modern_segregation",
+        "label": "Historic and modern segregation",
+        "level": "Societal Determinants",
+        "type": "Barrier",
+        "description": "Historic redlining and contemporary segregation shape property values, repair needs, service access, and neighborhood vulnerability around tangled titles.",
+        "related_interview_themes": ["black_butterfly_geography", "deferred_maintenance"],
+    },
+    {
         "id": "myth_automatic_transfer",
         "label": "Myth that ownership automatically transfers",
         "level": "Societal Determinants",
@@ -376,6 +400,30 @@ POWER_NODES = [
         "description": "Local clinics, fairs, and outreach events can bring estate planning and title-clearing help into the neighborhoods where residents live.",
         "related_interview_themes": ["community_clinics", "door_to_door_outreach"],
     },
+    {
+        "id": "probate_court_navigator",
+        "label": "Probate-court community navigator program",
+        "level": "Community Level Factors",
+        "type": "Facilitator",
+        "description": "A navigator program connected to probate court could help residents understand estate steps, documents, deadlines, and referrals before cases stall.",
+        "related_interview_themes": ["knowledge_gap", "administrative_burden"],
+    },
+    {
+        "id": "media_testimonial_campaigns",
+        "label": "Media and testimonial campaigns",
+        "level": "Community Level Factors",
+        "type": "Facilitator",
+        "description": "Resident stories, public media, and testimonial campaigns can make tangled titles visible and reduce confusion before households reach crisis.",
+        "related_interview_themes": ["community_outreach", "information_gap"],
+    },
+    {
+        "id": "coalition_letters",
+        "label": "Coalition letters and cross-sector advocacy",
+        "level": "Community Level Factors",
+        "type": "Facilitator",
+        "description": "Coalition letters and shared advocacy can align legal, housing, community, and policy organizations around the same intervention agenda.",
+        "related_interview_themes": ["referral_gap", "community_outreach", "holistic_legal_services"],
+    },
 ]
 
 
@@ -389,7 +437,7 @@ INTERVIEW_THEMES = [
             "Descendants can't use the property, or whoever's living at that property can't use the property, can't access the equity because of some sort of title issue.",
             "They have for decades have not been able to get a home repair, take out a mortgage on that property to fix something, take out a mortgage to send their kid to school; they can't access that equity and that money.",
         ],
-        "related_power_nodes": ["tangled_titles", "high_cost_title_clearing", "owner_occupied_protection_gap", "housing_affordability_tradeoff"],
+        "related_power_nodes": ["tangled_titles", "high_cost_title_clearing", "owner_occupied_protection_gap", "housing_affordability_tradeoff", "reparations_commission_remediation"],
         "implications": "Frame tangled titles as a housing stability and wealth preservation issue, not only a paperwork issue.",
     },
     {
@@ -415,7 +463,7 @@ INTERVIEW_THEMES = [
             "People don't even know they need to go to the Register of Wills.",
             "There's just no knowledge out there about, like, then what?",
         ],
-        "related_power_nodes": ["lack_of_knowledge", "register_of_wills", "information_gap", "probate_process"],
+        "related_power_nodes": ["lack_of_knowledge", "register_of_wills", "information_gap", "probate_process", "probate_court_navigator", "media_testimonial_campaigns"],
         "implications": "Education should explain what happens after a homeowner dies, using plain language and local examples.",
     },
     {
@@ -466,7 +514,7 @@ INTERVIEW_THEMES = [
             "Transportation is a big issue.",
             "For home repair you need to have your deed, electricity bills or water bills, mortgage papers, and SSN and ID cards to be able to qualify for programs.",
         ],
-        "related_power_nodes": ["digital_and_document_burden", "register_of_wills", "probate_process", "digital_divide"],
+        "related_power_nodes": ["digital_and_document_burden", "register_of_wills", "probate_process", "digital_divide", "probate_court_navigator"],
         "implications": "Services should include navigation, document support, and in-person assistance.",
     },
     {
@@ -579,7 +627,7 @@ INTERVIEW_THEMES = [
             "We're constantly going to neighborhood association meetings, connecting with new partners, and going to neighborhood association meetings.",
             "This year we focused more on us organizing door knocking.",
         ],
-        "related_power_nodes": ["neighborhood_associations", "block_captains", "community_legal_clinics", "baltimore_neighborhood_indicators_alliance"],
+        "related_power_nodes": ["neighborhood_associations", "block_captains", "community_legal_clinics", "baltimore_neighborhood_indicators_alliance", "media_testimonial_campaigns", "coalition_letters"],
         "implications": "Outreach should be proactive, place-based, and locally trusted.",
     },
     {
@@ -591,7 +639,7 @@ INTERVIEW_THEMES = [
             "You're just giving them a number and saying contact them, versus saying I'm going to make a connection for you with this particular person in this particular organization so that your case can move forward.",
             "There's no tracking of whether, if you've referred people out to legal providers, they're coming back into the pipeline of the home repair services.",
         ],
-        "related_power_nodes": ["referral_network", "housing_service_organizations", "legal_service_organizations", "stop_oppressive_seizures_fund"],
+        "related_power_nodes": ["referral_network", "housing_service_organizations", "legal_service_organizations", "stop_oppressive_seizures_fund", "coalition_letters"],
         "implications": "Build warm handoff workflows and track whether legal referrals resolve the barrier.",
     },
     {
@@ -617,8 +665,8 @@ INTERVIEW_THEMES = [
             "Most of the times it is the Black Butterfly region.",
             "Our population is about 90% Black and mostly seniors.",
         ],
-        "related_power_nodes": ["racialized_housing_inequality", "baltimore_neighborhood_indicators_alliance", "fixed_income_seniors", "annual_tax_lien_sales"],
-        "implications": "The website should frame tangled titles as a racialized housing and wealth issue, not only an individual paperwork failure.",
+        "related_power_nodes": ["racialized_housing_inequality", "baltimore_neighborhood_indicators_alliance", "fixed_income_seniors", "annual_tax_lien_sales", "historic_modern_segregation", "eminent_domain_asset_forfeiture", "reparations_commission_remediation"],
+        "implications": "Frame tangled titles as a racialized housing and wealth issue, not only an individual paperwork failure.",
     },
     {
         "id": "fixed_income_seniors",
@@ -678,6 +726,10 @@ INTERVENTION_LEVERAGE_POINTS = [
     ("Legal aid and title clearing", ["holistic_legal_services", "legal_cost_barrier", "administrative_burden"]),
     ("Mediation for family conflict", ["family_conflict", "joint_decision_burden"]),
     ("Warm handoffs and case navigation", ["referral_gap", "crisis_visibility"]),
+    ("Probate-court navigation", ["knowledge_gap", "administrative_burden"]),
+    ("Media and testimonial campaigns", ["community_outreach", "knowledge_gap"]),
+    ("Coalitional advocacy", ["referral_gap", "community_outreach", "holistic_legal_services"]),
+    ("Policy reform and reparations-oriented remediation", ["transfer_on_death_deed", "black_butterfly_geography", "tax_sale_vulnerability"]),
     ("Data-driven outreach", ["data_driven_outreach", "community_outreach", "black_butterfly_geography"]),
     ("Tax sale prevention", ["tax_sale_vulnerability", "shelter_security"]),
     ("Digital and document assistance", ["administrative_burden", "fixed_income_seniors"]),
@@ -703,6 +755,31 @@ QUALITATIVE_SLIDE_RESOURCE_LINKS = [
         "label": "MVLS estate planning clinics and seminars",
         "focus": "Legal aid and preventive planning",
         "url": "https://mvlslaw.org/upcoming-estate-planning-clinics-seminars-maryland/",
+    },
+    {
+        "label": "Johns Hopkins estate planning clinic",
+        "focus": "Community-based estate planning outreach",
+        "url": "https://www.eventbrite.com/e/estate-planning-clinic-tickets-1978445245989",
+    },
+    {
+        "label": "Greater Baltimore Urban League estate planning workshop",
+        "focus": "Neighborhood-based estate planning education",
+        "url": "https://www.facebook.com/gbulorg1924/posts/planning-for-the-future-starts-todayjoin-the-greater-baltimore-urban-league-in-p/1270806085166466/",
+    },
+    {
+        "label": "Community Mediation Maryland",
+        "focus": "Low-cost family and community mediation",
+        "url": "https://mdmediation.org/need-mediation/",
+    },
+    {
+        "label": "Baltimore Community Mediation Center",
+        "focus": "Family and neighborhood conflict resolution",
+        "url": "https://bcmccatalyst.gatsbyjs.io/",
+    },
+    {
+        "label": "Restorative Response Baltimore",
+        "focus": "Community mediation and restorative practices",
+        "url": "https://www.restorativeresponse.org/",
     },
     {
         "label": "Baltimore City Financial Empowerment Center",
@@ -879,8 +956,8 @@ SYSTEM_TOUCHPOINT_LANES = [
     },
     {
         "lane": "Community support actors",
-        "examples": ["neighborhood associations", "block captains", "community clinics", "trusted local leaders"],
-        "encounters": ["during outreach", "at community meetings", "when residents need trusted guidance"],
+        "examples": ["neighborhood associations", "block captains", "community clinics", "trusted local leaders", "coalitions", "media campaigns"],
+        "encounters": ["during outreach", "at community meetings", "when residents need trusted guidance", "when organizations coordinate public advocacy"],
     },
     {
         "lane": "Housing and legal service providers",
