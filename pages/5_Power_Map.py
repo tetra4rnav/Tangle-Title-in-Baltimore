@@ -417,7 +417,6 @@ with intro_text_col:
     st.markdown(
         """
         <div class="overview-inline-card" id="overview">
-            <h2>Overview</h2>
             <p>Tangled titles are not caused by one missing form. They emerge when family inheritance, legal records, repair programs, tax systems, and housing markets fail to recognize the same person as the homeowner.</p>
             <p class="overview-transition">This map shows how risk is produced across connected systems:</p>
             <ul>

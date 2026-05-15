@@ -311,7 +311,6 @@ with intro_text_col:
     st.markdown(
         """
         <div class="overview-inline-card" id="overview">
-            <h2>Overview</h2>
             <p>Tangled titles in Baltimore sit at the intersection of law, family, housing, and structural inequality. Interviews with legal, housing, civic design, and policy stakeholders show that title problems often remain invisible until residents seek repairs, receive tax sale notices, or try to access public benefits.</p>
             <p class="overview-transition">Across interviews, stakeholders repeatedly emphasized:</p>
             <ul>
@@ -525,20 +524,19 @@ with word_image_col:
         "Interview evidence and recurring themes.",
     )
 
-with st.expander("Explore recurring words from interviews", expanded=False):
-    st.markdown(
-        """
-        <div class="figure-container">
-            <h3>Recurring interview language</h3>
-            <p class="figure-caption">Click a term inside the visualization for a short interpretive note.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    render_interactive_word_cloud_panel(WORD_CLOUD_TERMS)
-    st.caption(
-        "Terms were cleaned and grouped to emphasize analytically meaningful interview language rather than raw transcript frequency."
-    )
+st.markdown(
+    """
+    <div class="figure-container">
+        <h3>Recurring interview language</h3>
+        <p class="figure-caption">Click a term inside the visualization for a short interpretive note.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+render_interactive_word_cloud_panel(WORD_CLOUD_TERMS)
+st.caption(
+    "Terms were cleaned and grouped to emphasize analytically meaningful interview language rather than raw transcript frequency."
+)
 
 with st.expander("Selected quotes behind the recurring words", expanded=False):
     quote_wall_query = st.text_input("Search selected quotes", key="quote-wall-search")

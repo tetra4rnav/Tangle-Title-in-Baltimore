@@ -970,7 +970,9 @@ def apply_theme() -> None:
         }
 
         .image-card.stakeholder img {
-            max-height: 310px;
+            height: auto;
+            max-height: none;
+            object-fit: contain;
         }
 
         .overview-inline-card {
